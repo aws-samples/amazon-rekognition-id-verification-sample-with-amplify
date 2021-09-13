@@ -1,0 +1,17 @@
+{
+    "groupPermissionMap": {
+        "admin": [
+            "create/update",
+            "read",
+            "delete"
+        ],
+        "poweruser": [
+            "create/update",
+            "read",
+            "delete"
+        ],
+        "viewer": [
+            "read"
+        ]
+    }
+}

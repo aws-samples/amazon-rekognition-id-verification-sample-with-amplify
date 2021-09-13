@@ -1,0 +1,129 @@
+type IngestedImage @model
+@key(fields: ["username", "image"])
+@auth(rules: [
+  { allow: private, provider: iam },
+  { allow: groups, groups: ["admin", "poweruser"] },
+  { allow: groups, groups: ["viewer"], operations: [read] }
+]) {
+  image: String!
+  username: String!
+  description: String
+  tags: [ImageTag] @connection(keyName: "tagsByImage", fields: ["image"])
+}
+
+type ImageTag @model
+@key(fields: ["tag", "image"])
+@key(name: "tagsByImage", fields: ["image", "tag"], queryField: "tagsByImage")
+@auth(rules: [
+  { allow: private, provider: iam },
+  {allow: groups, groups: ["admin", "poweruser"]},
+  { allow: groups, groups: ["viewer"], operations: [read] }
+]) {
+  image: String!
+  tag: String!
+}
+
+type UserImageTag @model
+@key(fields: ["tag", "username", "image"])
+@key(name: "tagsByUserImage", fields: ["username", "image", "tag"], queryField: "tagsByUserImage")
+@auth(rules: [
+  { allow: private, provider: iam },
+  {allow: groups, groups: ["admin", "poweruser"]},
+  { allow: groups, groups: ["viewer"], operations: [read] }
+]) {
+  username: String!
+  image: String!
+  tag: String!
+}
+
+type UserInfo @model
+@key(fields: ["companyid", "userid"])
+@key(name: "userInfoByFaceId", fields: ["companyid", "faceid"], queryField: "userInfoByFaceId")
+@key(name: "userInfoByRegStatus", fields: ["companyid", "registrationstatus"], queryField: "userInfoByRegStatus")
+@auth(rules: [
+  { allow: private, provider: iam },
+  { allow: groups, groups: ["admin", "poweruser"] },
+  { allow: groups, groups: ["viewer"], operations: [read] }
+]) {
+  companyid: String!
+  userid: String!
+  firstname: String!
+  lastname: String!
+  dob: AWSDate!
+  registrationstatus: String!
+  faceimage: String
+  faceid: String
+  description: String
+}
+
+type ModerationLabel {
+  ParentName: String @aws_cognito_user_pools,
+  Name: String @aws_cognito_user_pools,
+  Confidence: Float @aws_cognito_user_pools
+}
+
+type CreateCollectionResponse {
+  CollectionId: String @aws_cognito_user_pools,
+  Arn: String @aws_cognito_user_pools,
+}
+
+type CollectionResponse {
+  CollectionId: String @aws_cognito_user_pools,
+  Arn: String @aws_cognito_user_pools,
+}
+
+type DescribeCollectionResponse {
+  FaceCount: Int @aws_cognito_user_pools,
+  FaceModelVersion: String @aws_cognito_user_pools,
+  CollectionARN: String @aws_cognito_user_pools,
+  CreationTimestamp: AWSDateTime @aws_cognito_user_pools,
+  CollectionId: String @aws_cognito_user_pools,
+}
+
+type RegisterNewUserResponse {
+  Success: Boolean @aws_cognito_user_pools,
+  Message: String @aws_cognito_user_pools,
+  CompanyId: String @aws_cognito_user_pools,
+  UserId: String @aws_cognito_user_pools,
+  RegistrationStatus: String @aws_cognito_user_pools,
+}
+
+type LoginUserResponse {
+  Success: Boolean @aws_cognito_user_pools,
+  Message: String @aws_cognito_user_pools,
+  Confidence: Float @aws_cognito_user_pools,
+  CompanyId: String @aws_cognito_user_pools,
+  UserId: String @aws_cognito_user_pools,
+  FirstName: String @aws_cognito_user_pools,
+  LastName: String @aws_cognito_user_pools,
+  DOB: String @aws_cognito_user_pools,
+  RegistrationStatus: String @aws_cognito_user_pools,
+  FaceId: String @aws_cognito_user_pools,
+  FaceImage: String @aws_cognito_user_pools,
+}
+
+type DeleteUserResponse {
+  Success: Boolean @aws_cognito_user_pools,
+  Message: String @aws_cognito_user_pools,
+  CompanyId: String @aws_cognito_user_pools,
+  UserId: String @aws_cognito_user_pools,
+  FirstName: String @aws_cognito_user_pools,
+  LastName: String @aws_cognito_user_pools,
+  DOB: String @aws_cognito_user_pools,
+}
+
+type Query
+{
+  echo(msg: String): String @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
+  testrek(bucket: String, imagepath: String): [ModerationLabel] @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
+  listcollections(param: String): [CollectionResponse] @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
+  describecollection(collectionId: String): DescribeCollectionResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
+  loginuser(imageDataBase64: String): LoginUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
+}
+
+type Mutation
+{
+  createcollection(collectionId: String): CreateCollectionResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
+  registernewuser(userInfoAsJson: String): RegisterNewUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
+  deleteuser(userInfoAsJson: String): DeleteUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
+}

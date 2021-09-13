@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "api": {
+      "amazonrekognitionidv": [
+        "Query",
+        "Mutation"
+      ]
+    }
+  }
+}

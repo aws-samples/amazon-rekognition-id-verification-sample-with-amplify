@@ -1,0 +1,51 @@
+{
+  "lambdaLayers": [],
+  "permissions": {
+    "auth": {
+      "amazonrekognitionidv6570cbea": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ]
+    },
+    "api": {
+      "amazonrekognitionidv": [
+        "Query",
+        "Mutation"
+      ]
+    },
+    "storage": {
+      "idvimagebucket": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ],
+      "IngestedImage:@model(appsync)": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ],
+      "ImageTag:@model(appsync)": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ],
+      "UserImageTag:@model(appsync)": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ],
+      "UserInfo:@model(appsync)": [
+        "create",
+        "read",
+        "update",
+        "delete"
+      ]
+    }
+  }
+}
