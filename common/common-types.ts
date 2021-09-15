@@ -1,6 +1,11 @@
 import { API } from "aws-amplify";
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
 
+export interface PageProps {
+    username: string,
+    pageHeading: string
+}
+
 export interface GraphQLOptionsInput {
     input: object
 }

@@ -16,26 +16,14 @@ import RegisterNewUser from "../components/register-new-user";
 import LoginUser from "../components/login-user";
 import BrowseUsers from "../components/browse-users";
 import DefaultLayout from "../components/Layout/DefaultLayout";
+import { PageProps } from "../common/common-types";
 
 Amplify.configure({ ...awsExports, ssr: true });
-
-interface MyProps {
-  username: string
-}
-
-interface DashboardState {
-  currentMenuItem: string,
-  username: string
-}
-
-function handleLinkClick(linkName: string, state: DashboardState, setState: Dispatch<SetStateAction<DashboardState>>) {
-  setState({ currentMenuItem: linkName, username: state.username });
-}
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const SSR = withSSRContext(context);
 
-  var myProps: MyProps = { username: '' };
+  var myProps: PageProps = { username: '', pageHeading: 'Collections' };
 
   try {
     const user = await SSR.Auth.currentAuthenticatedUser();
@@ -51,35 +39,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 }
 
-function GetMainContent(myState: DashboardState) {
+export default function CollectionsPage(props: PageProps) {
 
-  const dashProps = { pageHeading: myState.currentMenuItem, username: myState.username }
-
-  switch (myState.currentMenuItem) {
-    case "User details":
-      return <UserDetails {...dashProps} />;
-    case "Upload images":
-      return <UploadImages {...dashProps} />;
-    case "Browse images":
-      return <BrowseImages {...dashProps} />;
-    case "Collections":
-      return <Collections {...dashProps} />;
-    case "Register new user":
-      return <RegisterNewUser {...dashProps} />;
-    case "Login user":
-      return <LoginUser {...dashProps} />;
-    case "Browse users":
-      return <BrowseUsers {...dashProps} />;
-    default:
-      return <DashboardComponent />;
-  }
-}
-
-export default function Index(props: MyProps) {
-
-  const [dashProps, setDashProps] = useState({ currentMenuItem: 'Dashboard', username: props.username });
-
-  const layoutProps = {username: dashProps.username, title: 'Dashboard', children: DashboardComponent()};
+  const layoutProps = {username: props.username, title: props.pageHeading, children: Collections(props)};
 
   return (
     <DefaultLayout {...layoutProps} />

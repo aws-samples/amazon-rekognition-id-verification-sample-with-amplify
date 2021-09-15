@@ -4,13 +4,7 @@ import SidebarItem, { SidebarItemProps } from '../components/sidebar-item';
 import { Box, FolderPlus, Icon, Person, PersonBadge, Grid, EmojiSmileFill, People, Camera } from 'react-bootstrap-icons';
 
 interface SidebarProps {
-    callFunc: (param: string) => void,
     name: string
-}
-
-interface AllSideItems {
-    dashboard: SidebarItemProps,
-    uploadImages: SidebarItemProps,
 }
 
 interface SidebarState {
@@ -20,47 +14,40 @@ interface SidebarState {
 class Sidebar extends Component {
     constructor(props: SidebarProps) {
         super(props);
-        this.state = {currentMenuItem: 'Dashboard'};
-        this.handleLinkClick = this.handleLinkClick.bind(this);
+        this.state = {currentMenuItem: props.name};
     }
 
-    handleLinkClick(linkName: string) {
-        this.setState({currentMenuItem: linkName});
-
-        const myProps = this.props as SidebarProps;
-
-        myProps.callFunc(linkName);
-    }
-
-    getMenuItem(name: string, selectedItemName: string, icon: Icon, iconColor: string = '#000000'): SidebarItemProps {
+    getMenuItem(name: string, selectedItemName: string, icon: Icon, link: string, iconColor: string = '#000000'): SidebarItemProps {
         return {
             name: name,
-            callFunc: this.handleLinkClick,
             selectedItemName: selectedItemName,
             icon: icon,
+            link: link,
             iconColor: iconColor,
         }
     }
 
     render() {
         const currState = this.state as SidebarState;
-        const userDetails = this.getMenuItem("User details", currState.currentMenuItem, Person);
-        const uploadImagesItem = this.getMenuItem("Upload images", currState.currentMenuItem, FolderPlus);
-        const browseImages = this.getMenuItem("Browse images", currState.currentMenuItem, Grid);
-        const collections = this.getMenuItem("Collections", currState.currentMenuItem, Box);
-        const registerNewUser = this.getMenuItem("Register new user", currState.currentMenuItem, PersonBadge);
-        const loginUser = this.getMenuItem("Login user", currState.currentMenuItem, Camera);
-        const browseUsers = this.getMenuItem("Browse users", currState.currentMenuItem, People);
+        const userDetails = this.getMenuItem("User details", currState.currentMenuItem, Person, '/user-details');
+        const uploadImagesItem = this.getMenuItem("Upload images", currState.currentMenuItem, FolderPlus, '/upload-images');
+        const browseImages = this.getMenuItem("Browse images", currState.currentMenuItem, Grid, '/browse-images');
+        const collections = this.getMenuItem("Collections", currState.currentMenuItem, Box, '/collections');
+        const registerNewUser = this.getMenuItem("Register new user", currState.currentMenuItem, PersonBadge, '/register-new-user');
+        const loginUser = this.getMenuItem("Login user", currState.currentMenuItem, Camera, '/login-user');
+        const browseUsers = this.getMenuItem("Browse users", currState.currentMenuItem, People, '/browse-users');
 
         return (
             <nav id="sidebarMenu" className="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
                 <div className="position-sticky pt-3">
                     <ul className="nav flex-column">
                         <li className="nav-item">
-                            <a className="nav-link active" aria-current="page" onClick={() => this.handleLinkClick('Dashboard')} style={{cursor: "pointer"}}>
-                                <span data-feather="home"></span>
-                                Dashboard
-                            </a>
+                            <Link href="/">
+                                <a className="nav-link active" aria-current="page" style={{ cursor: "pointer" }}>
+                                    <span data-feather="home"></span>
+                                    Dashboard
+                                </a>
+                            </Link>
                         </li>
                         <SidebarItem {...userDetails}/>
                         <SidebarItem {...uploadImagesItem}/>

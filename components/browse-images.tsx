@@ -1,14 +1,12 @@
-import useSWR from 'swr'
 import { DashboardProps } from "../common/dashboard-props";
 import React, { useState, SetStateAction, Dispatch } from "react";
 import { useAsyncEffect } from "use-async-effect";
-import { Auth, API, Storage } from "aws-amplify";
+import { Auth, Storage } from "aws-amplify";
 import { callGraphQLWithSimpleInput } from "../common/common-types";
 import { listIngestedImages } from "../src/graphql/queries";
 import { ListIngestedImagesQuery, IngestedImage } from "../src/API";
-import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
-import { ArrowLeft, ArrowRight, ArrowRightSquareFill, ArrowLeftSquareFill, Clipboard } from 'react-bootstrap-icons';
-import Image from 'next/image';
+import { GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
+import { ArrowRightSquareFill, ArrowLeftSquareFill, Clipboard } from 'react-bootstrap-icons';
 import axios from 'axios';
 
 interface BrowseImagesProps {
