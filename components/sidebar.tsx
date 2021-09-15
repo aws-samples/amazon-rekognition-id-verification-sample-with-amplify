@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { Component } from 'react';
 import SidebarItem, { SidebarItemProps } from '../components/sidebar-item';
-import { Box, FolderPlus, Icon, Person, PersonBadge, Grid, EmojiSmileFill, People, Camera } from 'react-bootstrap-icons';
+import { Box, FolderPlus, Icon, Person, PersonBadge, Grid, PersonBoundingBox, People, Camera } from 'react-bootstrap-icons';
 
 interface SidebarProps {
     name: string
@@ -33,7 +33,8 @@ class Sidebar extends Component {
         const uploadImagesItem = this.getMenuItem("Upload images", currState.currentMenuItem, FolderPlus, '/upload-images');
         const browseImages = this.getMenuItem("Browse images", currState.currentMenuItem, Grid, '/browse-images');
         const collections = this.getMenuItem("Collections", currState.currentMenuItem, Box, '/collections');
-        const registerNewUser = this.getMenuItem("Register new user", currState.currentMenuItem, PersonBadge, '/register-new-user');
+        const registerNewUser = this.getMenuItem("Register new user", currState.currentMenuItem, PersonBoundingBox, '/register-new-user');
+        const registerNewUserWithIdCard = this.getMenuItem("Register new user with ID card", currState.currentMenuItem, PersonBadge, '/register-new-user-with-idcard');
         const loginUser = this.getMenuItem("Login user", currState.currentMenuItem, Camera, '/login-user');
         const browseUsers = this.getMenuItem("Browse users", currState.currentMenuItem, People, '/browse-users');
 
@@ -54,6 +55,7 @@ class Sidebar extends Component {
                         <SidebarItem {...browseImages}/>
                         <SidebarItem {...collections}/>
                         <SidebarItem {...registerNewUser}/>
+                        <SidebarItem {...registerNewUserWithIdCard}/>
                         <SidebarItem {...loginUser}/>
                         <SidebarItem {...browseUsers}/>
                         <li className="nav-item">
