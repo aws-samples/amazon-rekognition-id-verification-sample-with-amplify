@@ -136,18 +136,16 @@ const UserTypeTabs = (propsWithStateInfo: BrowseUsersPropsWithStateInfo) => {
         <div>
             <ul className="nav nav-pills">
                 <li className="nav-item">
-                    <a className={`nav-link ${props.regStatusFilter == "done" ? "active" : ""}`}
-                        onClick={() => setState({ userList: props.userList, selectedUser: {} as UserInfo, fetchState: 'filterChanged', regStatusFilter: "done" })}
-                        href="#">
+                    <button className={`nav-link ${props.regStatusFilter == "done" ? "active" : ""}`}
+                        onClick={() => setState({ userList: props.userList, selectedUser: {} as UserInfo, fetchState: 'filterChanged', regStatusFilter: "done" })}>
                         Registered
-                    </a>
+                    </button>
                 </li>
                 <li className="nav-item">
-                    <a className={`nav-link ${props.regStatusFilter == "done" ? "" : "active"}`}
-                        onClick={() => setState({ userList: props.userList, selectedUser: {} as UserInfo, fetchState: 'filterChanged', regStatusFilter: "initial" })}
-                        href="#">
+                    <button className={`nav-link ${props.regStatusFilter == "done" ? "" : "active"}`}
+                        onClick={() => setState({ userList: props.userList, selectedUser: {} as UserInfo, fetchState: 'filterChanged', regStatusFilter: "initial" })}>
                         Incomplete
-                    </a>
+                    </button>
                 </li>
             </ul>
         </div>

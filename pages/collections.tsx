@@ -1,20 +1,8 @@
-import { AmplifyAuthenticator } from "@aws-amplify/ui-react";
-import { Amplify, Auth, withSSRContext } from "aws-amplify";
-import React, { MouseEvent, useState, SetStateAction, Dispatch, useEffect } from "react";
-import Head from "next/head";
+import { Amplify, withSSRContext } from "aws-amplify";
+import React, {  } from "react";
 import awsExports from "../src/aws-exports";
 import { GetServerSideProps } from 'next'
-import Link from "next/link"
-import Sidebar from "../components/sidebar"
-import PageHeading from "../components/pageheadingcomponent";
-import DashboardComponent from "../components/dashboard";
-import UserDetails from "../components/user-details";
-import UploadImages from "../components/upload-images"
-import BrowseImages from "../components/browse-images";
 import Collections from "../components/collections";
-import RegisterNewUser from "../components/register-new-user";
-import LoginUser from "../components/login-user";
-import BrowseUsers from "../components/browse-users";
 import DefaultLayout from "../components/Layout/DefaultLayout";
 import { PageProps } from "../common/common-types";
 

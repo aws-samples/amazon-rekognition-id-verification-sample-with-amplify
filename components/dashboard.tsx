@@ -1,18 +1,15 @@
-import CustomBar from "../components/custom-bar-chart"
-import SampleTable from "../components/sample-table";
+import { callGraphQLSimpleQuery, callGraphQLWithSimpleInput, PageProps } from "../common/common-types"
+import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
 import { DashboardProps } from "../common/dashboard-props";
+import { EchoQuery } from "../src/API";
+import { echo } from "../src/graphql/queries";
 
-export const DashboardComponent = () => {
+export const Dashboard = (props: PageProps) => {
     return (
         <div>
-            <CustomBar></CustomBar>
-
-            <h3>Section title</h3>
-            <div className="table-responsive">
-                <SampleTable />
-            </div>
+            Welcome
         </div>
     );
 };
 
-export default DashboardComponent;
+export default Dashboard;

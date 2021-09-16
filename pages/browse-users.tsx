@@ -2,19 +2,16 @@ import { Amplify, withSSRContext } from "aws-amplify";
 import React, {  } from "react";
 import awsExports from "../src/aws-exports";
 import { GetServerSideProps } from 'next'
-import BrowseImages from "../components/browse-images";
+import BrowseUsers from "../components/browse-users";
 import DefaultLayout from "../components/Layout/DefaultLayout";
+import { PageProps } from "../common/common-types";
 
 Amplify.configure({ ...awsExports, ssr: true });
 
-interface RegNewUserProps {
-  username: string
-}
-
-export const getServerSideProps: GetServerSideProps = async (context) => {
+export const getStaticProps: GetServerSideProps = async (context) => {
   const SSR = withSSRContext(context);
 
-  var myProps: RegNewUserProps = { username: '' };
+  var myProps: PageProps = { username: '', pageHeading: 'Browse users' };
 
   try {
     const user = await SSR.Auth.currentAuthenticatedUser();
@@ -30,10 +27,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 }
 
-export default function BrowseImagesPage(props: RegNewUserProps) {
+export default function BrowseUsersPage(props: PageProps) {
 
-  const dashPropsIn = { pageHeading: 'Browse images', username: props.username }
-  const layoutProps = {username: props.username, title: dashPropsIn.pageHeading, children: BrowseImages(dashPropsIn)};
+  const layoutProps = {username: props.username, title: props.pageHeading, children: BrowseUsers(props)};
 
   return (
     <DefaultLayout {...layoutProps} />
