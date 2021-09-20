@@ -264,6 +264,13 @@ export type LoginUserResponse = {
   FaceImage?: string | null,
 };
 
+export type DetectTextResponse = {
+  __typename: "DetectTextResponse",
+  Success?: boolean | null,
+  Message?: string | null,
+  DetectedText?: Array< string | null > | null,
+};
+
 export type ModelStringKeyConditionInput = {
   eq?: string | null,
   le?: string | null,
@@ -387,6 +394,23 @@ export type RegisternewuserMutationVariables = {
 
 export type RegisternewuserMutation = {
   registernewuser?:  {
+    __typename: "RegisterNewUserResponse",
+    Success?: boolean | null,
+    Message?: string | null,
+    CompanyId?: string | null,
+    UserId?: string | null,
+    RegistrationStatus?: string | null,
+  } | null,
+};
+
+export type RegisternewuserwithidcardMutationVariables = {
+  userInfoAsJson?: string | null,
+  faceImageDataBase64?: string | null,
+  idImageDataBase64?: string | null,
+};
+
+export type RegisternewuserwithidcardMutation = {
+  registernewuserwithidcard?:  {
     __typename: "RegisterNewUserResponse",
     Success?: boolean | null,
     Message?: string | null,
@@ -720,6 +744,19 @@ export type LoginuserQuery = {
     RegistrationStatus?: string | null,
     FaceId?: string | null,
     FaceImage?: string | null,
+  } | null,
+};
+
+export type DetecttextinidcardQueryVariables = {
+  imageDataBase64?: string | null,
+};
+
+export type DetecttextinidcardQuery = {
+  detecttextinidcard?:  {
+    __typename: "DetectTextResponse",
+    Success?: boolean | null,
+    Message?: string | null,
+    DetectedText?: Array< string | null > | null,
   } | null,
 };
 

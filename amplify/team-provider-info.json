@@ -18,7 +18,7 @@
       "function": {
         "idvworkflowfn": {
           "deploymentBucketName": "amplify-amazonrekognitionidv-dev-94325-deployment",
-          "s3Key": "amplify-builds/idvworkflowfn-75796e62506d336d6b4d-build.zip"
+          "s3Key": "amplify-builds/idvworkflowfn-4c6c7a543042546a4f6a-build.zip"
         },
         "S3Triggerb6cacc90": {
           "deploymentBucketName": "amplify-amazonrekognitionidv-dev-94325-deployment",

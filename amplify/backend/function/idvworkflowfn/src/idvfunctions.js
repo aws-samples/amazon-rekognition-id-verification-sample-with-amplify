@@ -127,6 +127,9 @@ module.exports = {
         //    to associate the face embeddings with the ExternalImageId
         // 4. Store the face image in the S3 bucket along with the user metadata in DDB (this is already in place)
 
+        // NOTE: In 'registerNewUser', we'll showcase the use of S3-stored images when calling the Rekognition APIs
+        //       For details on how to supply image blogs directly to the Rekognition APIs, please see 'registerNewUserWithIdCard'
+
         const bucket = process.env.STORAGE_IDVIMAGEBUCKET_BUCKETNAME;
         const userInfoTable = process.env.API_AMAZONREKOGNITIONIDV_USERINFOTABLE_NAME;
 
@@ -213,6 +216,158 @@ module.exports = {
             else {
                 response.Success = true;
                 response.Message = '';
+            }
+        }
+        catch (e) {
+            response.Message = e.toString();
+            response.RegistrationStatus = 'unknown-error';
+            response.Success = false;
+            console.log(e);
+        }
+
+        return response;
+    },
+
+    registerNewUserWithIdCard: async function (userInfoAsJson, faceImageDataBase64, idImageDataBase64) {
+        // 1. First check the face image quality via DetectFaces
+        //    a. For face on id card
+        //    b. For selfie
+        // 2. Use CompareFaces to ensure that the face in captured image is the same as on the id card
+        // 3. Use SearchFacesByImage against the collection(s) to check for any duplicate registration
+        // 4. Index the face image using IndexFaces and use the ExternalImageId (userid, in this case)
+        //    to associate the face embeddings with the ExternalImageId
+        // 5. Store the face image in the S3 bucket along with the user metadata in DDB (this is already in place)
+
+        // NOTE: In 'registerNewUserWithIdCard', we'll supply image blobs directly to the Rekognition APIs
+        //       For details on how to supply S3-stored images to the Rekognition APIs, please see 'registerNewUser'
+
+        const bucket = process.env.STORAGE_IDVIMAGEBUCKET_BUCKETNAME;
+        const userInfoTable = process.env.API_AMAZONREKOGNITIONIDV_USERINFOTABLE_NAME;
+
+        const collectionId = "Coll1";
+        const userInfo = JSON.parse(userInfoAsJson);
+        var response = {
+            Companyid: userInfo.companyid,
+            UserId: userInfo.userid,
+            RegistrationStatus: 'incomplete',
+            Success: true,
+            Message: '',
+        };
+
+        const rek = new Rekognition();
+        try {
+            var faceImageBlob = Buffer.from(faceImageDataBase64, 'base64');
+            var idImageBlob = Buffer.from(idImageDataBase64, 'base64');
+
+            var params = {
+                Image: {
+                    Bytes: faceImageBlob
+                }
+            };
+            // 1a. Check the face image quality via DetectFaces
+            var detectFacesResponse = await rek.detectFaces(params).promise();
+            var detectFacesValidation = validateidv.validateDetectFacesResponse(detectFacesResponse);
+            if (!detectFacesValidation.success) {
+                response.Message = detectFacesValidation.message;
+                response.RegistrationStatus = 'detectfaces-failed for face (*not* id card)';
+                response.Success = false;
+            }
+            
+            // 1b. Check the id card face image quality via DetectFaces
+            if (response.Success) {
+                params = {
+                    Image: {
+                        Bytes: idImageBlob
+                    }
+                };
+                detectFacesResponse = await rek.detectFaces(params).promise();
+                detectFacesValidation = validateidv.validateDetectFacesResponse(detectFacesResponse);
+                if (!detectFacesValidation.success) {
+                    response.Message = detectFacesValidation.message;
+                    response.RegistrationStatus = 'detectfaces-failed for id card';
+                    response.Success = false;
+                }
+            }
+            
+            // 2. Compare faces across id card and selfie
+            if (response.Success) {
+                params = {
+                    SimilarityThreshold: 90,
+                    SourceImage: {
+                        Bytes: faceImageBlob
+                    },
+                    TargetImage: {
+                        Bytes: idImageBlob
+                    }
+                };
+                const compareFacesResponse = await rek.compareFaces(params).promise();
+                const compareFacesValidation = validateidv.validateFaceComparison(compareFacesResponse);
+                if(!compareFacesValidation.success) {
+                    response.Message = compareFacesValidation.message;
+                    response.RegistrationStatus = 'compare-faces validation failed';
+                    response.Success = false;
+                }
+            }
+            
+            // 3. Use SearchFacesByImage against the collection(s) to check for any duplicate registration
+            if(response.Success) {
+                params = {
+                    CollectionId: collectionId,
+                    FaceMatchThreshold: 95,
+                    Image: {
+                        Bytes: faceImageBlob
+                    }
+                };
+
+                const searchFacesResponse = await rek.searchFacesByImage(params).promise();
+                const duplicateCheckResponse = validateidv.validateDuplicateCheck(searchFacesResponse);
+                if (!duplicateCheckResponse.success) {
+                    response.Message = duplicateCheckResponse.message;
+                    response.RegistrationStatus = 'duplicate-found';
+                    response.Success = false;
+                }
+            }
+            
+            var faceId = "";
+
+            // 4. Index the face image using IndexFaces and use the ExternalImageId (userid, in this case)
+            //    to associate the face embeddings with the ExternalImageId
+            if (response.Success) {
+                const externalImageId = userInfo.userid;
+                params = {
+                    CollectionId: collectionId,
+                    DetectionAttributes: [],
+                    ExternalImageId: externalImageId,
+                    Image: {
+                        Bytes: faceImageBlob
+                    }
+                }
+                const indexFaceResponse = await rek.indexFaces(params).promise();
+                if (!indexFaceResponse ||
+                    !indexFaceResponse.FaceRecords ||
+                    indexFaceResponse.FaceRecords.length != 1) {
+                    response.Message = 'IndexFaces failed';
+                    response.RegistrationStatus = 'indexfaces-failed';
+                    response.Success = false;
+                } else {
+                    faceId = indexFaceResponse.FaceRecords[0].Face.FaceId;
+                    response.RegistrationStatus = 'done';
+                }
+            }
+            
+            // 5. Now update ddb entry w/ face embeddings id, if successful so far
+            // If prev failure, then update reg status in ddb
+            if (response.Success) {
+                const ddbResponse = await updateUserInfo(userInfoTable, userInfo, faceId, response.RegistrationStatus);
+                if (!ddbResponse.success) {
+                    response.Message = 'UserInfo ddb update failed!';
+                    response.RegistrationStatus = 'userinfo-ddb-failed';
+                    response.Success = false;
+                }
+                else {
+                    response.Success = true;
+                    response.Message = '';
+                }
             }
         }
         catch (e) {
@@ -339,6 +494,40 @@ module.exports = {
             response.FaceImage = userInfo.items[0].faceimage;
             
             return response;
+        }
+        
+        return response;
+    },
+
+    detectTextInIdCard: async function (imageDataBase64) {
+
+        const rek = new Rekognition();
+
+        var response = {
+            Success: false,
+            Message: '',
+            DetectedText: []
+        };
+
+        var buf = Buffer.from(imageDataBase64, 'base64');
+
+        var params = {
+            Image: {
+                Bytes: buf
+            }
+        };
+        const detectTextResponse = await rek.detectText(params).promise();
+        if (detectTextResponse &&
+            detectTextResponse["TextDetections"]) {
+            var textDetections = detectTextResponse["TextDetections"];
+            for (var i = 0; i < textDetections.length; i++) {
+                response.DetectedText.push(textDetections[i].DetectedText);
+            }
+
+            response.Success = true;
+        } else {
+            response.Success = false;
+            response.Message = "Unable to extract text"
         }
         
         return response;

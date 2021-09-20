@@ -21,6 +21,25 @@ export const registernewuser = /* GraphQL */ `
     }
   }
 `;
+export const registernewuserwithidcard = /* GraphQL */ `
+  mutation Registernewuserwithidcard(
+    $userInfoAsJson: String
+    $faceImageDataBase64: String
+    $idImageDataBase64: String
+  ) {
+    registernewuserwithidcard(
+      userInfoAsJson: $userInfoAsJson
+      faceImageDataBase64: $faceImageDataBase64
+      idImageDataBase64: $idImageDataBase64
+    ) {
+      Success
+      Message
+      CompanyId
+      UserId
+      RegistrationStatus
+    }
+  }
+`;
 export const deleteuser = /* GraphQL */ `
   mutation Deleteuser($userInfoAsJson: String) {
     deleteuser(userInfoAsJson: $userInfoAsJson) {

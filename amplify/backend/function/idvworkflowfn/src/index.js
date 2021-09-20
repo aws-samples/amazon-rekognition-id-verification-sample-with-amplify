@@ -67,6 +67,9 @@ const resolvers = {
         loginuser: async (ctx) => {
             return await idvfunctions.loginUser(ctx.arguments.imageDataBase64);
         },
+        detecttextinidcard: async (ctx) => {
+            return await idvfunctions.detectTextInIdCard(ctx.arguments.imageDataBase64);
+        },
         moderate: async (ctx) => {
             var params = {
                 Image: {
@@ -108,6 +111,9 @@ const resolvers = {
         },
         registernewuser: async (ctx) => {
             return await idvfunctions.registerNewUser(ctx.arguments.userInfoAsJson);
+        },
+        registernewuserwithidcard: async (ctx) => {
+            return await idvfunctions.registerNewUserWithIdCard(ctx.arguments.userInfoAsJson, ctx.arguments.faceImageDataBase64, ctx.arguments.idImageDataBase64);
         },
         deleteuser: async (ctx) => {
             return await idvfunctions.deleteUser(ctx.arguments.userInfoAsJson);

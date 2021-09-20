@@ -119,7 +119,7 @@ async function submitUser(props: RegNewUserProps, dispatch: Dispatch<RegUserActi
                 }
             );
 
-            // call api to run through idv new user registration flow
+            // call api to run through idv new user registration flow.
             // see lambda function idvworkflowfn for more details
             const variables = {userInfoAsJson: JSON.stringify(userInfo)};
             const registerUserResponse = await callGraphQLSimpleQuery<RegisternewuserMutation>(

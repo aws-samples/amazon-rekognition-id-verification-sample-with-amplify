@@ -52,6 +52,15 @@ export const loginuser = /* GraphQL */ `
     }
   }
 `;
+export const detecttextinidcard = /* GraphQL */ `
+  query Detecttextinidcard($imageDataBase64: String) {
+    detecttextinidcard(imageDataBase64: $imageDataBase64) {
+      Success
+      Message
+      DetectedText
+    }
+  }
+`;
 export const getIngestedImage = /* GraphQL */ `
   query GetIngestedImage($username: String!, $image: String!) {
     getIngestedImage(username: $username, image: $image) {

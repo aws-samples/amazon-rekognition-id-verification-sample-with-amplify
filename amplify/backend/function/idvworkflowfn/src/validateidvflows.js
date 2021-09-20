@@ -47,5 +47,25 @@ module.exports = {
         
         response.message = "Found duplicate face";
         return response;
+    },
+    validateFaceComparison: function(compareFacesResponse) {
+        var response = {
+            success: false,
+            message: 'Unable to validate compare faces'
+        };
+
+        if (!compareFacesResponse ||
+            !compareFacesResponse.FaceMatches) {
+            return response;
+        }
+        
+        if(compareFacesResponse.FaceMatches.length == 1) {
+            response.success = true;
+            response.message = '';
+            return response;
+        }
+        
+        response.message = "Face on id card does not match selfie";
+        return response;
     }
 }

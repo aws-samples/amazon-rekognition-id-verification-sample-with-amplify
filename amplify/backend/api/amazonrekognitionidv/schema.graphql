@@ -112,6 +112,12 @@ type DeleteUserResponse {
   DOB: String @aws_cognito_user_pools,
 }
 
+type DetectTextResponse {
+  Success: Boolean @aws_cognito_user_pools,
+  Message: String @aws_cognito_user_pools,
+  DetectedText: [String] @aws_cognito_user_pools,
+}
+
 type Query
 {
   echo(msg: String): String @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
@@ -119,11 +125,13 @@ type Query
   listcollections(param: String): [CollectionResponse] @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
   describecollection(collectionId: String): DescribeCollectionResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
   loginuser(imageDataBase64: String): LoginUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
+  detecttextinidcard(imageDataBase64: String): DetectTextResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
 }
 
 type Mutation
 {
   createcollection(collectionId: String): CreateCollectionResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
   registernewuser(userInfoAsJson: String): RegisterNewUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
+  registernewuserwithidcard(userInfoAsJson: String, faceImageDataBase64: String, idImageDataBase64: String): RegisterNewUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
   deleteuser(userInfoAsJson: String): DeleteUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
 }

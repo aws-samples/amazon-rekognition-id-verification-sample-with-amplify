@@ -56,7 +56,6 @@ export const UploadImages = (dashProps: DashboardProps) => {
         setImages(imageList);
     }
 
-
     return (
         <div className="App">
             <ImageUploading
