@@ -19,6 +19,7 @@ interface RegNewUserWithIdCardProps {
     busy: boolean,
     status: string,
     idCard: any,
+    alertMessage: string,
 }
 
 interface StoragePutResponse {
@@ -30,12 +31,16 @@ interface RegUserAction {
     payload: string,
 }
 
+interface AlertProps {
+    message: string,
+}
+
 interface RegFieldsProps {
     innerProps: RegNewUserWithIdCardProps,
     dispatch: Dispatch<RegUserAction>
 }
 
-const initialProps = { screenshot: '', userid: '', firstname: '', lastname: '', dob: '1999-01-01', busy: false, status: 'initial', idCard: null };
+const initialProps = { screenshot: '', userid: '', firstname: '', lastname: '', dob: '1999-01-01', busy: false, status: 'initial', idCard: null, alertMessage: '' };
 
 function reducer(state: RegNewUserWithIdCardProps, action: RegUserAction) {
     switch (action.type) {
@@ -69,6 +74,11 @@ function reducer(state: RegNewUserWithIdCardProps, action: RegUserAction) {
                 ...state,
                 busy: (action.payload == "true"),
             };
+        case 'alertMessage':
+            return {
+                ...state,
+                alertMessage: action.payload,
+            };
         case 'reset':
             return initialProps;
         case 'success':
@@ -87,9 +97,27 @@ function reducer(state: RegNewUserWithIdCardProps, action: RegUserAction) {
     }
 }
 
+function validateFields(props: RegNewUserWithIdCardProps) {
+    if (!props.firstname ||
+        !props.lastname ||
+        !props.dob ||
+        !props.screenshot ||
+        !props.idCard ||
+        !props.userid) {
+        return false;
+    }
+
+    return true;
+}
+
 async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<RegUserAction>) {
 
     try {
+        if(!validateFields(props)) {
+            dispatch({ type: 'alertMessage', payload: 'Please fill in all fields' });
+            return;
+        }
+
         dispatch({ type: 'busy', payload: 'true' });
 
         const headerToReplace = 'data:binary/octet-stream;base64,';
@@ -150,16 +178,39 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
             }
         );
 
-        console.log(registerUserResponse);
-
-        // // set state to success
-        dispatch({ type: 'success', payload: '' });
-
-        window.open('/login-user');
+        if(!registerUserResponse.data?.registernewuserwithidcard?.Success) {
+            dispatch({ type: 'alertMessage', payload: registerUserResponse.data?.registernewuserwithidcard?.Message as string });
+            dispatch({ type: 'busy', payload: 'false' });
+        } else {
+            dispatch({ type: 'success', payload: '' });
+            window.location.assign('/login-user');
+        }
     } catch (errors) {
+        dispatch({ type: 'alertMessage', payload: JSON.stringify(errors) });
         dispatch({ type: 'busy', payload: 'false' });
         console.log(errors);
     }
+}
+
+const Alert = (props: AlertProps) => {
+    const [state, setState] = useState({showing: true});
+
+    const onClose = () => {
+        setState({showing: false});
+    };
+
+    return (
+        <div className={`alert alert-danger alert-dismissible fade show ${state.showing ? "d-block" : "d-none"}`} role="alert">
+            <strong>Error!</strong> {props.message}
+            <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="alert"
+                onClick={onClose}
+                aria-label="Close">
+            </button>
+        </div>
+    )
 }
 
 const SubmissionSummary = (userProps: RegNewUserWithIdCardProps) => {
@@ -222,6 +273,7 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
     return (
         <div>
             <div className="container">
+                {state.alertMessage && <Alert {...{message: state.alertMessage}}/>}
                 <div className="row">
                     <div className="col-md-6" style={{ border: "1px solid #eeeeee", padding: 5 }}>
                         <h3>Selfie</h3>
@@ -269,7 +321,7 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
                                     </button>}
                                     {imageList.map((image, index) => (
                                         <div key={index} className="image-item border border-info m-2 p-2">
-                                            <Image src={image['data_url']} alt="" width="200" height="200" />
+                                            <Image src={image['data_url']} alt="" width="300" height="200" />
                                             <div className="image-item__btn-wrapper">
                                                 <button className="btn btn-primary" style={{ marginRight: "5px" }} onClick={() => onImageUpdate(index)}>Update</button>
                                                 <button className="btn btn-danger" style={{ marginRight: "5px" }} onClick={() => onImageRemove(index)}>Remove</button>
@@ -282,7 +334,7 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
                     </div>
                 </div>
             </div>
-            <div style={{ marginTop: 10 }}>
+            <div className="container" style={{ marginTop: 10 }}>
                 <button
                     className={`btn btn-outline-primary ${state.screenshot ? "d-none" : "d-inline"}`}
                     onClick={capture}>
@@ -295,14 +347,14 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
                 </button>
             </div>
             <hr />
-            <div style={{ marginTop: 10 }}>
+            <div className="container" style={{ marginTop: 10 }}>
                 <RegistrationFields {...regFieldsArg} />
+                <button
+                    className={`btn btn-primary ${state.busy ? "disabled" : ""}`}
+                    onClick={() => submitUser(state, dispatch)}>
+                    {state.busy ? 'Registering' : 'Register'}
+                </button>
             </div>
-            <button
-                className={`btn btn-primary ${state.busy ? "disabled" : ""}`}
-                onClick={() => submitUser(state, dispatch)}>
-                {state.busy ? 'Registering' : 'Register'}
-            </button>
             <SubmissionSummary {...state} />
         </div>
     );
