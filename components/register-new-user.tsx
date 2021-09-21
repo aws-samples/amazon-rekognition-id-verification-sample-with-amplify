@@ -246,7 +246,7 @@ export const RegisterNewUser = (props: DashboardProps) => {
             <button
                 className={`btn btn-primary ${state.busy ? "disabled" : ""}`}
                 onClick={() => submitUser(state, dispatch)}>
-                {state.busy ? 'Registering': 'Register'}
+                {state.busy ? 'Please wait...': 'Register'}
             </button>
             <SubmissionSummary {...state}/>
         </div>

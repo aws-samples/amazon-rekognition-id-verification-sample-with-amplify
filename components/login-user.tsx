@@ -20,6 +20,7 @@ interface LoginPageProps {
     Message: string,
     RegistrationStatus: string,
     Success: boolean,
+    Busy: boolean,
     UserId: string,
 }
 
@@ -27,6 +28,23 @@ interface LoginSummaryRowData {
     header: string,
     value: string,
 }
+
+const initialProps = {
+    CompanyId: '',
+    Confidence: 0,
+    DOB: '',
+    FaceId: '',
+    FaceImage: '',
+    FirstName: '',
+    LastName: '',
+    Message: '',
+    RegistrationStatus: '',
+    Success: true,
+    Busy: false,
+    UserId: '',
+}
+
+const initialPropsBusy = {...JSON.parse(JSON.stringify(initialProps)), Busy: true};
 
 const LoginSummaryRow = (props: LoginSummaryRowData) => {
     return (
@@ -41,6 +59,8 @@ async function doLogin(imageBytesb64: string, setState: Dispatch<SetStateAction<
     let input = {
         imageDataBase64: imageBytesb64
     };
+
+    setState({...initialPropsBusy});
 
     // https://dev.to/rmuhlfeldner/how-to-use-an-aws-amplify-graphql-api-with-a-react-typescript-frontend-2g79
     const { data } = await callGraphQLWithSimpleInput<LoginuserQuery>(
@@ -62,6 +82,7 @@ async function doLogin(imageBytesb64: string, setState: Dispatch<SetStateAction<
         Message: data?.loginuser?.Message as string,
         RegistrationStatus: data?.loginuser?.RegistrationStatus as string,
         Success: data?.loginuser?.Success as boolean,
+        Busy: false,
         UserId: data?.loginuser?.UserId as string,
     });
 }
@@ -73,7 +94,7 @@ export const LoginUser = (props: DashboardProps) => {
         facingMode: "user"
     };
 
-    const [state, setState] = useState({} as LoginPageProps);
+    const [state, setState] = useState(initialProps as LoginPageProps);
 
     const webcamRef = useRef(null) as any;
 
@@ -102,10 +123,13 @@ export const LoginUser = (props: DashboardProps) => {
             </div>
             <div style={{ marginTop: 10 }}>
                 <button
-                    className="btn btn-primary"
+                    className={`btn btn-primary ${state.Busy ? "disabled" : ""}`}
                     onClick={capture}>
-                    Login
+                    {state.Busy ? 'Please wait...': 'Login'}
                 </button>
+            </div>
+            <div className={`${state.Success ? "d-none" : "d-block"}`}>
+                <h2 className="text-danger">Login failed</h2>
             </div>
             <div className={`${state.UserId ? "d-block" : "d-none"}`}>
                 <hr />
