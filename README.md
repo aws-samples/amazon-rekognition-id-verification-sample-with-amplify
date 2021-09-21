@@ -48,7 +48,25 @@ amplify init
 amplify push
 ```
 
+3. Deploy the frontend
+
+```
+amplify add hosting
+```
+
+```
+amplify publish
+```
+
+For more details on hosting/publishing, please see [Add hosting to your app](https://docs.amplify.aws/start/getting-started/hosting/q/integration/js/#add-hosting-to-your-app).
+
 Please see the [Amplify Getting Started](https://docs.amplify.aws/start/q/integration/js/) instructions for details on deploying the Amplify application.
+
+## Getting started with the sample app
+
+1. Create a user in the Cognito User Pool attached to the app.
+2. Accessing the web endpoint.
+Amplify allows you 
 
 ## Security
 
