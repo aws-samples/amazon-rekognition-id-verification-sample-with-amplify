@@ -38,9 +38,9 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
 
 export default function Index(props: PageProps) {
 
-  const [dashProps, setDashProps] = useState({ currentMenuItem: 'Dashboard', username: props.username });
+  const [dashProps, setDashProps] = useState({ currentMenuItem: 'Home', username: props.username });
 
-  const layoutProps = {username: dashProps.username, title: 'Dashboard', children: Dashboard(props)};
+  const layoutProps = {username: dashProps.username, title: 'Home', children: Dashboard(props)};
 
   return (
     <DefaultLayout {...layoutProps} />
