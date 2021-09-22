@@ -156,3 +156,7 @@ img:hover + .button, .button:hover {
   font-size: 1.5rem;
   color: #5F939A;
 }
+
+.navbar-style {
+  background-color: #316B83 !important;
+}

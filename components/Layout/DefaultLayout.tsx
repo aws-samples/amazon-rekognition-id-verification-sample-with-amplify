@@ -26,14 +26,13 @@ export default function DefaultLayout(props: DefaultLayoutProps) {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+      <div className="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow navbar-style">
         <Link href="/">
           <a className="navbar-brand col-md-3 col-lg-2 me-0 px-3">Rekognition IdV</a>
         </Link>
         <button className="navbar-toggler position-absolute d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
           <span className="navbar-toggler-icon"></span>
         </button>
-        <input className="form-control form-control-dark w-100" type="text" placeholder="Image search" aria-label="Image search"></input>
         <div className="navbar-nav">
           <div className="nav-item text-nowrap">
             <Link href="#">

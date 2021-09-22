@@ -29,9 +29,6 @@ class Sidebar extends Component {
 
     render() {
         const currState = this.state as SidebarState;
-        const userDetails = this.getMenuItem("User details", currState.currentMenuItem, Person, '/user-details');
-        const uploadImagesItem = this.getMenuItem("Upload images", currState.currentMenuItem, FolderPlus, '/upload-images');
-        const browseImages = this.getMenuItem("Browse images", currState.currentMenuItem, Grid, '/browse-images');
         const collections = this.getMenuItem("Collections", currState.currentMenuItem, Box, '/collections');
         const registerNewUser = this.getMenuItem("Register new user", currState.currentMenuItem, PersonBoundingBox, '/register-new-user');
         const registerNewUserWithIdCard = this.getMenuItem("Register new user with ID card", currState.currentMenuItem, PersonBadge, '/register-new-user-with-idcard');
@@ -42,9 +39,6 @@ class Sidebar extends Component {
             <nav id="sidebarMenu" className="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
                 <div className="position-sticky pt-3">
                     <ul className="nav flex-column">
-                        <SidebarItem {...userDetails} />
-                        <SidebarItem {...uploadImagesItem} />
-                        <SidebarItem {...browseImages} />
                         <SidebarItem {...collections} />
                         <SidebarItem {...registerNewUser} />
                         <SidebarItem {...registerNewUserWithIdCard} />
