@@ -32,21 +32,23 @@ Users interested in implemented Identity Verification with Amazon Rekognition sh
 
 ## Installing and configuring AWS Amplify
 
-Please see[AWS Amplify - Installation](https://docs.amplify.aws/cli/start/install/) for more details.
+1. Install npm
+
+First you'll need to install npm, if you don't already have it installed. Please see [npm docs](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for information on installing npm.
+
+2. Install Amplify
+
+Next, if you don't have the AWS Amplify CLI installed, please follow the instructions at [AWS Amplify - Installation](https://docs.amplify.aws/cli/start/install/).
 
 ## Deploying sample app
 
-1. Install npm
-
-Please see [npm docs](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for information on installing npm if you don't already have it installed.
-
-2. Clone the git repo on your local machine
+1. Clone the git repo on your local machine
 
 ```
 git clone https://github.com/aws-samples/amazon-rekognition-id-verification-sample-with-amplify
 ```
 
-3. Switch to the cloned directory and run `npm update`
+2. Switch to the cloned directory and run `npm update`
 
 ```
 cd amazon-rekognition-id-verification-sample-with-amplify
@@ -55,19 +57,19 @@ npm update --legacy-peer-deps
 
 The `--legacy-peer-deps` flag is required by a package used in the sample.
 
-4. Initialize Amplify
+3. Initialize Amplify
 
 ```
 amplify init
 ```
 
-5. Deploy the backend
+4. Deploy the backend
 
 ```
 amplify push
 ```
 
-6. Deploy the frontend
+5. Deploy the frontend
 
 ```
 amplify add hosting
