@@ -36,31 +36,45 @@ Please see[AWS Amplify - Installation](https://docs.amplify.aws/cli/start/instal
 
 ## Deploying sample app
 
-1. Initialize Amplify
+1. Install npm
+
+Please see [npm docs](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) for information on installing npm if you don't already have it installed.
+
+2. Clone the git repo on your local machine
+
+```
+git clone https://github.com/aws-samples/amazon-rekognition-id-verification-sample-with-amplify
+```
+
+3. Switch to the cloned directory and run `npm update`
+
+```
+cd amazon-rekognition-id-verification-sample-with-amplify
+npm update --legacy-peer-deps
+```
+
+The `--legacy-peer-deps` flag is required by a package used in the sample.
+
+4. Initialize Amplify
 
 ```
 amplify init
 ```
 
-2. Deploy the backend
+5. Deploy the backend
 
 ```
 amplify push
 ```
 
-3. Deploy the frontend
+6. Deploy the frontend
 
 ```
 amplify add hosting
-```
-
-```
 amplify publish
 ```
 
-For more details on hosting/publishing, please see [Add hosting to your app](https://docs.amplify.aws/start/getting-started/hosting/q/integration/js/#add-hosting-to-your-app).
-
-Please see the [Amplify Getting Started](https://docs.amplify.aws/start/q/integration/js/) instructions for details on deploying the Amplify application.
+For more details on hosting/publishing, please see [Add hosting to your app](https://docs.amplify.aws/start/getting-started/hosting/q/integration/js/#add-hosting-to-your-app). The [Amplify Getting Started](https://docs.amplify.aws/start/q/integration/js/) page has detailed instructions on working with Amplify.
 
 ## Getting started with the sample app
 
