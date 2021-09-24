@@ -4,7 +4,7 @@ import React, { useState, SetStateAction, Dispatch } from "react";
 import { useAsyncEffect } from "use-async-effect";
 import { Auth, API, Storage } from "aws-amplify";
 import { callGraphQLWithSimpleInput, callGraphQLSimpleQuery } from "../common/common-types";
-import { listIngestedImages, userInfoByRegStatus } from "../src/graphql/queries";
+import { userInfoByRegStatus } from "../src/graphql/queries";
 import { deleteuser } from "../src/graphql/mutations";
 import { DeleteuserMutation, UserInfo, UserInfoByRegStatusQuery } from "../src/API";
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
