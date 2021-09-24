@@ -22,24 +22,6 @@
         "update",
         "delete"
       ],
-      "IngestedImage:@model(appsync)": [
-        "create",
-        "read",
-        "update",
-        "delete"
-      ],
-      "ImageTag:@model(appsync)": [
-        "create",
-        "read",
-        "update",
-        "delete"
-      ],
-      "UserImageTag:@model(appsync)": [
-        "create",
-        "read",
-        "update",
-        "delete"
-      ],
       "UserInfo:@model(appsync)": [
         "create",
         "read",

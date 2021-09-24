@@ -1,41 +1,3 @@
-type IngestedImage @model
-@key(fields: ["username", "image"])
-@auth(rules: [
-  { allow: private, provider: iam },
-  { allow: groups, groups: ["admin", "poweruser"] },
-  { allow: groups, groups: ["viewer"], operations: [read] }
-]) {
-  image: String!
-  username: String!
-  description: String
-  tags: [ImageTag] @connection(keyName: "tagsByImage", fields: ["image"])
-}
-
-type ImageTag @model
-@key(fields: ["tag", "image"])
-@key(name: "tagsByImage", fields: ["image", "tag"], queryField: "tagsByImage")
-@auth(rules: [
-  { allow: private, provider: iam },
-  {allow: groups, groups: ["admin", "poweruser"]},
-  { allow: groups, groups: ["viewer"], operations: [read] }
-]) {
-  image: String!
-  tag: String!
-}
-
-type UserImageTag @model
-@key(fields: ["tag", "username", "image"])
-@key(name: "tagsByUserImage", fields: ["username", "image", "tag"], queryField: "tagsByUserImage")
-@auth(rules: [
-  { allow: private, provider: iam },
-  {allow: groups, groups: ["admin", "poweruser"]},
-  { allow: groups, groups: ["viewer"], operations: [read] }
-]) {
-  username: String!
-  image: String!
-  tag: String!
-}
-
 type UserInfo @model
 @key(fields: ["companyid", "userid"])
 @key(name: "userInfoByFaceId", fields: ["companyid", "faceid"], queryField: "userInfoByFaceId")
@@ -54,12 +16,6 @@ type UserInfo @model
   faceimage: String
   faceid: String
   description: String
-}
-
-type ModerationLabel {
-  ParentName: String @aws_cognito_user_pools,
-  Name: String @aws_cognito_user_pools,
-  Confidence: Float @aws_cognito_user_pools
 }
 
 type CreateCollectionResponse {
@@ -120,8 +76,6 @@ type DetectTextResponse {
 
 type Query
 {
-  echo(msg: String): String @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
-  testrek(bucket: String, imagepath: String): [ModerationLabel] @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
   listcollections(param: String): [CollectionResponse] @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
   describecollection(collectionId: String): DescribeCollectionResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
   loginuser(imageDataBase64: String): LoginUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
