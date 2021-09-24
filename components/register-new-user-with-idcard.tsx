@@ -2,13 +2,15 @@ import { Amplify, API, Auth, withSSRContext, graphqlOperation, Storage } from "a
 import { DashboardProps } from "../common/dashboard-props";
 import Webcam from "react-webcam";
 import ImageUploading from 'react-images-uploading'
-import { useReducer, useRef } from "react";
+import React, { useReducer, useRef } from "react";
 import { useCallback, SetStateAction, useState, Dispatch, ReducerAction } from "react";
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
 import { callGraphQL, callGraphQLSimpleQuery } from "../common/common-types"
 import { createUserInfo, registernewuserwithidcard } from "../src/graphql/mutations"
 import { CreateUserInfoMutation, RegisternewuserwithidcardMutation } from "../src/API"
 import Image from "next/image"
+import { getImageFromUploadComponent } from "../common/image-capture-helpers";
+import Link from "next/link";
 
 interface RegNewUserWithIdCardProps {
     screenshot: string,
@@ -20,6 +22,16 @@ interface RegNewUserWithIdCardProps {
     status: string,
     idCard: any,
     alertMessage: string,
+}
+
+interface SubmissionSummaryProps {
+    userProps: RegNewUserWithIdCardProps,
+    resetFunc: () => void
+}
+
+interface SummaryRowData {
+    header: string,
+    value: string,
 }
 
 interface StoragePutResponse {
@@ -113,15 +125,12 @@ function validateFields(props: RegNewUserWithIdCardProps) {
 async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<RegUserAction>) {
 
     try {
-        if(!validateFields(props)) {
+        if (!validateFields(props)) {
             dispatch({ type: 'alertMessage', payload: 'Please fill in all fields' });
             return;
         }
 
         dispatch({ type: 'busy', payload: 'true' });
-
-        const headerToReplace = 'data:binary/octet-stream;base64,';
-        const base64header = 'data:image/jpeg;base64,';
 
         // first store image in s3 bucket
         var filename = "regimages/" + props.userid + ".jpg";
@@ -135,7 +144,7 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
             }
         }) as StoragePutResponse;
 
-        if(!storageResponse || !storageResponse.key) {
+        if (!storageResponse || !storageResponse.key) {
             console.log("Unable to upload image");
             dispatch({ type: 'busy', payload: 'false' });
             return;
@@ -165,10 +174,11 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
 
         // call api to run through idv new user registration flow
         // see lambda function idvworkflowfn for more details
-        const variables = { 
-            userInfoAsJson: JSON.stringify(userInfo), 
-            faceImageDataBase64: props.screenshot.replace(headerToReplace, '').replace(base64header, ''),
-            idImageDataBase64: props.idCard[0]["data_url"].replace(headerToReplace, '').replace(base64header, '') };
+        const variables = {
+            userInfoAsJson: JSON.stringify(userInfo),
+            faceImageDataBase64: getImageFromUploadComponent(props.screenshot),
+            idImageDataBase64: getImageFromUploadComponent(props.idCard[0]["data_url"])
+        };
 
         const registerUserResponse = await callGraphQLSimpleQuery<RegisternewuserwithidcardMutation>(
             {
@@ -178,12 +188,12 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
             }
         );
 
-        if(!registerUserResponse.data?.registernewuserwithidcard?.Success) {
+        if (!registerUserResponse.data?.registernewuserwithidcard?.Success) {
             dispatch({ type: 'alertMessage', payload: registerUserResponse.data?.registernewuserwithidcard?.Message as string });
             dispatch({ type: 'busy', payload: 'false' });
         } else {
             dispatch({ type: 'success', payload: '' });
-            window.location.assign('/login-user');
+            //window.location.assign('/login-user');
         }
     } catch (errors) {
         dispatch({ type: 'alertMessage', payload: JSON.stringify(errors) });
@@ -192,11 +202,20 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
     }
 }
 
+const SummaryRow = (props: SummaryRowData) => {
+    return (
+        <tr>
+            <td className="header-cell">{props.header}</td>
+            <td className="value-cell">{props.value}</td>
+        </tr>
+    )
+}
+
 const Alert = (props: AlertProps) => {
-    const [state, setState] = useState({showing: true});
+    const [state, setState] = useState({ showing: true });
 
     const onClose = () => {
-        setState({showing: false});
+        setState({ showing: false });
     };
 
     return (
@@ -213,10 +232,36 @@ const Alert = (props: AlertProps) => {
     )
 }
 
-const SubmissionSummary = (userProps: RegNewUserWithIdCardProps) => {
+const SubmissionSummary = (props: SubmissionSummaryProps) => {
+    const userProps = props.userProps;
+    const reset = props.resetFunc;
+
     return (
         <div className={`${userProps.status == 'success' ? 'd-block' : 'd-none'}`}>
-            Blah
+            <h2 className="text-success">
+                Successfully registered user
+            </h2>
+            <table className="table table-bordered" style={{ marginTop: 10 }}>
+                <tbody>
+                    <SummaryRow header="User Id" value={userProps.userid} />
+                    <SummaryRow header="First name" value={userProps.firstname} />
+                    <SummaryRow header="Last name" value={userProps.lastname} />
+                    <SummaryRow header="DOB" value={userProps.dob} />
+                </tbody>
+            </table>
+            <div>
+                <Link href="/login-user">
+                    <a className="btn btn-info">
+                        Try logging in
+                    </a>
+                </Link>
+                <button
+                    className="btn btn-outline-secondary"
+                    onClick={reset}
+                    style={{ marginLeft: 5 }}>
+                    Register another user
+                </button>
+            </div>
         </div>
     );
 }
@@ -270,10 +315,15 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
         dispatch({ type: 'idCard', payload: imageList });
     }
 
+    const submissionSummaryProps = {
+        userProps: state,
+        resetFunc: () => dispatch({ type: 'reset', payload: '' })
+    }
+
     return (
         <div>
-            <div className="container">
-                {state.alertMessage && <Alert {...{message: state.alertMessage}}/>}
+            <div className={`container ${state.status != 'success' ? 'd-block' : 'd-none'}`}>
+                {state.alertMessage && <Alert {...{ message: state.alertMessage }} />}
                 <div className="row">
                     <div className="col-md-6" style={{ border: "1px solid #eeeeee", padding: 5 }}>
                         <h3>Selfie</h3>
@@ -334,7 +384,7 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
                     </div>
                 </div>
             </div>
-            <div className="container" style={{ marginTop: 10 }}>
+            <div className={`container ${state.status != 'success' ? 'd-block' : 'd-none'}`} style={{ marginTop: 10 }}>
                 <button
                     className={`btn btn-outline-primary ${state.screenshot ? "d-none" : "d-inline"}`}
                     onClick={capture}>
@@ -346,8 +396,10 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
                     Retake pic
                 </button>
             </div>
-            <hr />
-            <div className="container" style={{ marginTop: 10 }}>
+            <div className={`container ${state.status != 'success' ? 'd-block' : 'd-none'}`}>
+                <hr />
+            </div>
+            <div className={`container ${state.status != 'success' ? 'd-block' : 'd-none'}`} style={{ marginTop: 10 }}>
                 <RegistrationFields {...regFieldsArg} />
                 <button
                     className={`btn btn-primary ${state.busy ? "disabled" : ""}`}
@@ -355,7 +407,7 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
                     {state.busy ? 'Registering' : 'Register'}
                 </button>
             </div>
-            <SubmissionSummary {...state} />
+            <SubmissionSummary {...submissionSummaryProps} />
         </div>
     );
 };

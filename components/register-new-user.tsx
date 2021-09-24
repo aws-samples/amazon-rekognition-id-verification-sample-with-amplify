@@ -187,7 +187,11 @@ export const RegisterNewUser = (props: DashboardProps) => {
         [webcamRef]
     );
 
-    const pasteImg = useCallback(
+    const onChange = async (imageList: any, addUpdateIndex: any) => {
+        dispatch({ type: 'screenshot', payload: imageList });
+    }
+
+    const uploadImg = useCallback(
         async() => {
             const copiedText = await navigator.clipboard.readText();
             const headerToReplace = 'data:binary/octet-stream;base64,';
@@ -230,8 +234,8 @@ export const RegisterNewUser = (props: DashboardProps) => {
                 <button
                     className={`btn btn-outline-primary ${state.screenshot ? "d-none" : "d-inline"}`}
                     style={{marginLeft: 10}}
-                    onClick={pasteImg}>
-                    Paste photo
+                    onClick={uploadImg}>
+                    Upload photo
                 </button>
                 <button
                     className={`btn btn-info ${state.screenshot ? "d-inline" : "d-none"}`}
