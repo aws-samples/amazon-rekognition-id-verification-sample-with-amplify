@@ -44,12 +44,6 @@ const COGNITO_USERNAME_CLAIM_KEY = 'cognito:username';
 */
 const resolvers = {
     Query: {
-        echo: ctx => {
-            return ctx.arguments.msg;
-        },
-        testrek: async (ctx) => {
-            return await idvfunctions.testRek(ctx.arguments.bucket, ctx.arguments.imagepath);
-        },
         describecollection: async (ctx) => {
             return await idvfunctions.describeCollection(ctx.arguments.collectionId);
         },
@@ -62,40 +56,6 @@ const resolvers = {
         detecttextinidcard: async (ctx) => {
             return await idvfunctions.detectTextInIdCard(ctx.arguments.imageDataBase64);
         },
-        moderate: async (ctx) => {
-            var params = {
-                Image: {
-                    S3Object: {
-                        Bucket: ctx.arguments.bucket,
-                        Name: ctx.arguments.imagepath
-                    }
-                }
-            };
-            const rek = new Rekognition(), s3client = new S3();
-            try {
-                const response = await rek.detectModerationLabels(params).promise();
-                if (response) {
-                    return response.ModerationLabels;
-                } else {
-                    return [];
-                }
-            } catch (e) {
-                console.log(e);
-                return [];
-            }
-        },
-        me: async ctx => {
-            var params = {
-                UserPoolId: COGNITO_USERPOOL_ID, /* required */
-                Username: ctx.identity.claims[COGNITO_USERNAME_CLAIM_KEY], /* required */
-            };
-            try {
-                // Read more: https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#adminGetUser-property
-                return await cognitoIdentityServiceProvider.adminGetUser(params).promise();
-            } catch (e) {
-                throw new Error(`NOT FOUND`);
-            }
-        }
     },
     Mutation: {
         createcollection: async (ctx) => {
@@ -106,6 +66,9 @@ const resolvers = {
         },
         registernewuserwithidcard: async (ctx) => {
             return await idvfunctions.registerNewUserWithIdCard(ctx.arguments.userInfoAsJson, ctx.arguments.faceImageDataBase64, ctx.arguments.idImageDataBase64);
+        },
+        updateexistinguserphoto: async (ctx) => {
+            return await idvfunctions.updateExistingUserPhoto(ctx.arguments.userInfoAsJson, ctx.arguments.faceImageDataBase64);
         },
         deleteuser: async (ctx) => {
             return await idvfunctions.deleteUser(ctx.arguments.userInfoAsJson);

@@ -40,6 +40,22 @@ export const registernewuserwithidcard = /* GraphQL */ `
     }
   }
 `;
+export const updateexistinguserphoto = /* GraphQL */ `
+  mutation Updateexistinguserphoto(
+    $userInfoAsJson: String
+    $faceImageDataBase64: String
+  ) {
+    updateexistinguserphoto(
+      userInfoAsJson: $userInfoAsJson
+      faceImageDataBase64: $faceImageDataBase64
+    ) {
+      Success
+      Message
+      CompanyId
+      UserId
+    }
+  }
+`;
 export const deleteuser = /* GraphQL */ `
   mutation Deleteuser($userInfoAsJson: String) {
     deleteuser(userInfoAsJson: $userInfoAsJson) {

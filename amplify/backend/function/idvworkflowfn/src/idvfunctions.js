@@ -380,6 +380,72 @@ module.exports = {
         return response;
     },
 
+    updateExistingUserPhoto: async function (userInfoAsJson, faceImageDataBase64) {
+        const bucket = process.env.STORAGE_IDVIMAGEBUCKET_BUCKETNAME;
+        const keyPrefix = "/public/";
+        const userInfoTable = process.env.API_AMAZONREKOGNITIONIDV_USERINFOTABLE_NAME;
+
+        const collectionId = "Coll1";
+        const userInfo = JSON.parse(userInfoAsJson);
+        var response = {
+            Companyid: userInfo.companyid,
+            UserId: userInfo.userid,
+            Success: true,
+            Message: '',
+        };
+
+        const rek = new Rekognition(), s3client = new S3();
+
+        try {
+            // 1. delete face id from collection
+            if (userInfo.faceid) {
+                var params = {
+                    CollectionId: collectionId,
+                    FaceIds: [userInfo.faceid]
+                };
+                const deleteFacesResponse = await rek.deleteFaces(params).promise();
+                console.log(deleteFacesResponse);
+
+                if (!deleteFacesResponse ||
+                    !deleteFacesResponse.DeletedFaces ||
+                    deleteFacesResponse.DeletedFaces.length != 1) {
+                    response.Success = false;
+                    response.Message = 'Unable to delete face from collection'
+                }
+            }
+
+            // 2. delete s3 image
+            if (userInfo.faceimage && response.Success) {
+                params = {
+                    Bucket: bucket,
+                    Key: keyPrefix + userInfo.faceimage
+                };
+
+                const s3DeleteResponse = await s3client.deleteObject(params).promise();
+                            console.log(s3DeleteResponse);
+            }
+
+            // 3. delete ddb entry
+            if (response.Success) {
+                var docClient = new DynamoDB.DocumentClient();
+                var ddbParams = {
+                    TableName: userInfoTable,
+                    Key: {
+                        "companyid": 'Amazon',
+                        "userid": userInfo.userid
+                    }
+                }
+                var ddbDeleteResponse = await docClient.delete(ddbParams).promise();
+                console.log(ddbDeleteResponse);
+            }
+        } catch (e) {
+            response.Success = false;
+            response.Message = e.toString();
+        }
+
+        return response
+    },
+
     deleteUser: async function (userInfoAsJson) {
         const bucket = process.env.STORAGE_IDVIMAGEBUCKET_BUCKETNAME;
         const keyPrefix = "/public/";

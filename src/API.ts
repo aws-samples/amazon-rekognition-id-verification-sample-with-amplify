@@ -17,6 +17,14 @@ export type RegisterNewUserResponse = {
   RegistrationStatus?: string | null,
 };
 
+export type UpdateUserPhotoResponse = {
+  __typename: "UpdateUserPhotoResponse",
+  Success?: boolean | null,
+  Message?: string | null,
+  CompanyId?: string | null,
+  UserId?: string | null,
+};
+
 export type DeleteUserResponse = {
   __typename: "DeleteUserResponse",
   Success?: boolean | null,
@@ -240,6 +248,21 @@ export type RegisternewuserwithidcardMutation = {
     CompanyId?: string | null,
     UserId?: string | null,
     RegistrationStatus?: string | null,
+  } | null,
+};
+
+export type UpdateexistinguserphotoMutationVariables = {
+  userInfoAsJson?: string | null,
+  faceImageDataBase64?: string | null,
+};
+
+export type UpdateexistinguserphotoMutation = {
+  updateexistinguserphoto?:  {
+    __typename: "UpdateUserPhotoResponse",
+    Success?: boolean | null,
+    Message?: string | null,
+    CompanyId?: string | null,
+    UserId?: string | null,
   } | null,
 };
 
