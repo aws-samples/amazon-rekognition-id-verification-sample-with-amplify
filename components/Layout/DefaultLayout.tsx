@@ -1,5 +1,6 @@
 import { AmplifyAuthenticator } from "@aws-amplify/ui-react";
-import React, {  } from "react";
+import React, { useCallback } from "react";
+import { Auth } from 'aws-amplify';
 import Head from "next/head";
 import Link from "next/link"
 import Sidebar from "../../components/sidebar"
@@ -15,6 +16,11 @@ export default function DefaultLayout(props: DefaultLayoutProps) {
 
   const sidebarPropsVal = {
     name: props.title
+  };
+
+  const signOut = async() => {
+    await Auth.signOut();
+    window.location.assign('/');
   };
 
   return (
@@ -35,9 +41,12 @@ export default function DefaultLayout(props: DefaultLayoutProps) {
         </button>
         <div className="navbar-nav">
           <div className="nav-item text-nowrap">
-            <Link href="#">
-              <a className="nav-link px-3">Sign out</a>
-            </Link>
+            <a
+              href="#"
+              onClick={signOut}
+              className="nav-link px-3">
+              Sign out
+            </a>
           </div>
         </div>
       </div>
