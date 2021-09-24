@@ -7,6 +7,7 @@ import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
 import { callGraphQL, callGraphQLSimpleQuery } from "../common/common-types"
 import { createUserInfo, registernewuser } from "../src/graphql/mutations"
 import { CreateUserInfoMutation, RegisternewuserMutation } from "../src/API"
+import Link from "next/link";
 
 interface RegNewUserProps {
     screenshot: string,
@@ -16,6 +17,17 @@ interface RegNewUserProps {
     dob: string,
     busy: boolean,
     status: string,
+    alertMessage: string,
+}
+
+interface SubmissionSummaryProps {
+    userProps: RegNewUserProps,
+    resetFunc: () => void
+}
+
+interface SummaryRowData {
+    header: string,
+    value: string,
 }
 
 interface StoragePutResponse {
@@ -32,7 +44,11 @@ interface RegFieldsProps {
     dispatch: Dispatch<RegUserAction>
 }
 
-const initialProps = { screenshot: '', userid: '', firstname: '', lastname: '', dob: '1999-01-01', busy: false, status: 'initial'  };
+interface AlertProps {
+    message: string,
+}
+
+const initialProps = { screenshot: '', userid: '', firstname: '', lastname: '', dob: '1999-01-01', busy: false, status: 'initial', alertMessage: ''  };
 
 function reducer(state: RegNewUserProps, action: RegUserAction) {
     switch(action.type) {
@@ -66,6 +82,11 @@ function reducer(state: RegNewUserProps, action: RegUserAction) {
                 ...state,
                 busy: (action.payload == "true"),
             };
+        case 'alertMessage':
+            return {
+                ...state,
+                alertMessage: action.payload,
+            };
         case 'reset':
             return initialProps;
         case 'success':
@@ -78,9 +99,26 @@ function reducer(state: RegNewUserProps, action: RegUserAction) {
     }
 }
 
+function validateFields(props: RegNewUserProps) {
+    if (!props.firstname ||
+        !props.lastname ||
+        !props.dob ||
+        !props.screenshot ||
+        !props.userid) {
+        return false;
+    }
+
+    return true;
+}
+
 async function submitUser(props: RegNewUserProps, dispatch: Dispatch<RegUserAction>) {
 
     try {
+        if (!validateFields(props)) {
+            dispatch({ type: 'alertMessage', payload: 'Please fill in all fields' });
+            return;
+        }
+
         dispatch({type: 'busy', payload: 'true'});
 
         // first store image in s3 bucket
@@ -141,10 +179,66 @@ async function submitUser(props: RegNewUserProps, dispatch: Dispatch<RegUserActi
     }
 }
 
-const SubmissionSummary = (userProps: RegNewUserProps) => {
+const SummaryRow = (props: SummaryRowData) => {
+    return (
+        <tr>
+            <td className="header-cell">{props.header}</td>
+            <td className="value-cell">{props.value}</td>
+        </tr>
+    )
+}
+
+const Alert = (props: AlertProps) => {
+    const [state, setState] = useState({ showing: true });
+
+    const onClose = () => {
+        setState({ showing: false });
+    };
+
+    return (
+        <div className={`alert alert-danger alert-dismissible fade show ${state.showing ? "d-block" : "d-none"}`} role="alert">
+            <strong>Error!</strong> {props.message}
+            <button
+                type="button"
+                className="btn-close"
+                data-bs-dismiss="alert"
+                onClick={onClose}
+                aria-label="Close">
+            </button>
+        </div>
+    )
+}
+
+const SubmissionSummary = (props: SubmissionSummaryProps) => {
+    const userProps = props.userProps;
+    const reset = props.resetFunc;
+
     return (
         <div className={`${userProps.status == 'success' ? 'd-block' : 'd-none'}`}>
-            Blah
+            <h2 className="text-success">
+                Successfully registered user
+            </h2>
+            <table className="table table-bordered" style={{ marginTop: 10 }}>
+                <tbody>
+                    <SummaryRow header="User Id" value={userProps.userid} />
+                    <SummaryRow header="First name" value={userProps.firstname} />
+                    <SummaryRow header="Last name" value={userProps.lastname} />
+                    <SummaryRow header="DOB" value={userProps.dob} />
+                </tbody>
+            </table>
+            <div>
+                <Link href="/login-user">
+                    <a className="btn btn-info">
+                        Try logging in
+                    </a>
+                </Link>
+                <button
+                    className="btn btn-outline-secondary"
+                    onClick={reset}
+                    style={{ marginLeft: 5 }}>
+                    Register another user
+                </button>
+            </div>
         </div>
     );
 }
@@ -207,9 +301,15 @@ export const RegisterNewUser = (props: DashboardProps) => {
         dispatch: dispatch as Dispatch<RegUserAction>
     };
 
+    const submissionSummaryProps = {
+        userProps: state,
+        resetFunc: () => dispatch({ type: 'reset', payload: '' })
+    }
+
     return (
         <div>
-            <div>
+            {state.alertMessage && <Alert {...{ message: state.alertMessage }} />}
+            <div className={`${state.status != 'success' ? 'd-block' : 'd-none'}`}>
                 <Webcam
                     audio={false}
                     className={`${state.screenshot ? "d-none" : "d-block"}`}
@@ -225,7 +325,7 @@ export const RegisterNewUser = (props: DashboardProps) => {
                     <img src={state.screenshot} alt="face" height={videoConstraints.height} />
                 </div>
             </div>
-            <div style={{ marginTop: 10 }}>
+            <div className={`${state.status != 'success' ? 'd-block' : 'd-none'}`} style={{ marginTop: 10 }}>
                 <button
                     className={`btn btn-outline-primary ${state.screenshot ? "d-none" : "d-inline"}`}
                     onClick={capture}>
@@ -243,16 +343,18 @@ export const RegisterNewUser = (props: DashboardProps) => {
                     Retake pic
                 </button>
             </div>
-            <hr />
-            <div style={{ marginTop: 10 }}>
-                <RegistrationFields {...regFieldsArg} />
+            <div className={`${state.status != 'success' ? 'd-block' : 'd-none'}`}>
+                <hr/>
             </div>
-            <button
+            <div className={`${state.status != 'success' ? 'd-block' : 'd-none'}`} style={{ marginTop: 10 }}>
+                <RegistrationFields {...regFieldsArg} />
+                <button
                 className={`btn btn-primary ${state.busy ? "disabled" : ""}`}
                 onClick={() => submitUser(state, dispatch)}>
                 {state.busy ? 'Please wait...': 'Register'}
             </button>
-            <SubmissionSummary {...state}/>
+            </div>
+            <SubmissionSummary {...submissionSummaryProps} />
         </div>
     );
 };
