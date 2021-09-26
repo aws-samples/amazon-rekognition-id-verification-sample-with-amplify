@@ -20,15 +20,14 @@ Users interested in implemented Identity Verification with Amazon Rekognition sh
 
 1. Check face image quality via the [DetectFaces API](https://docs.aws.amazon.com/rekognition/latest/dg/API_DetectFaces.html).
 2. Check face image quality of face on Id card via the [DetectFaces API](https://docs.aws.amazon.com/rekognition/latest/dg/API_DetectFaces.html).
-3. Use [CompareFaces API](https://docs.aws.amazon.com/rekognition/latest/dg/API_CompareFaces.html) to ensure that the face on the supplied Id card and the face on the image match.
+3. Use [CompareFaces API](https://docs.aws.amazon.com/rekognition/latest/dg/API_CompareFaces.html) to ensure that the face on the supplied Id card and the face on the selfie match.
 4. Use [SearchFacesByImage API](https://docs.aws.amazon.com/rekognition/latest/dg/API_SearchFacesByImage.html) against the collection(s) to check for any duplicate registration.
 5. Index the face image using [IndexFaces API](https://docs.aws.amazon.com/rekognition/latest/dg/API_IndexFaces.html) and use the ExternalImageID (Social Security number or a similar unique ID) parameter to associate the face embeddings with the ExternalImageID.
 6. Store the face image in the S3 bucket along with the user metadata (face-id returned from the IndexFaces API, SSN and S3 URL) in DynamoDB. The SSN or a unique person identifier can be used as a key to lookup S3 URL and the face-id.
 
 ### Existing user login
 1. Check face image quality via the [DetectFaces API](https://docs.aws.amazon.com/rekognition/latest/dg/API_DetectFaces.html).
-2. Get the S3 URI from DynamoDB using Social Security number (or a similar unique ID) as a lookup key.
-3. Search against the collection could be performed with [SearchFacesbyImage API](https://docs.aws.amazon.com/rekognition/latest/dg/API_SearchFacesByImage.html). If there is a face match and person’s ID, and the ExternalImageID match a successful response can be returned.
+2. Search against the collection with [SearchFacesbyImage API](https://docs.aws.amazon.com/rekognition/latest/dg/API_SearchFacesByImage.html). If there is a face match, then return the use the faceId to return additional data about the user by cross-referencing against profile data in DynamoDB.
 
 ## Installing and configuring AWS Amplify
 

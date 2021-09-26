@@ -126,7 +126,7 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
 
     try {
         if (!validateFields(props)) {
-            dispatch({ type: 'alertMessage', payload: 'Please fill in all fields' });
+            dispatch({ type: 'alertMessage', payload: 'Please fill in all fields; *and* please ensure that you\'ve supplied both a selfie image and uploaded an id card.' });
             return;
         }
 

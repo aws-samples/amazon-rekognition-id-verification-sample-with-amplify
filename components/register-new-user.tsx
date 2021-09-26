@@ -115,7 +115,7 @@ async function submitUser(props: RegNewUserProps, dispatch: Dispatch<RegUserActi
 
     try {
         if (!validateFields(props)) {
-            dispatch({ type: 'alertMessage', payload: 'Please fill in all fields' });
+            dispatch({ type: 'alertMessage', payload: 'Please fill in all fields; *and* please ensure that you\'ve supplied a selfie image.' });
             return;
         }
 
