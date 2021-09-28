@@ -18,9 +18,22 @@ type UserInfo @model
   description: String
 }
 
+type ConfigEntry @model
+@key(fields: ["configroot", "configid"])
+@auth(rules: [
+  { allow: private, provider: iam },
+  { allow: groups, groups: ["admin", "poweruser"] }
+]) {
+  configroot: String!
+  configid: String!
+  value: String!
+}
+
 type CreateCollectionResponse {
   CollectionId: String @aws_cognito_user_pools,
   Arn: String @aws_cognito_user_pools,
+  Success: Boolean @aws_cognito_user_pools,
+  Message: String @aws_cognito_user_pools,
 }
 
 type CollectionResponse {
