@@ -1,5 +1,8 @@
 import { API } from "aws-amplify";
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
+import { CreateConfigEntryMutation, GetConfigEntryQuery, UpdateConfigEntryMutation } from "../src/API";
+import { getConfigEntry } from "../src/graphql/queries";
+import { createConfigEntry, updateConfigEntry } from "../src/graphql/mutations";
 
 export interface PageProps {
     username: string,
@@ -40,4 +43,79 @@ export async function callGraphQLWithSimpleInput<T>(params: GraphQLOptionsWithFi
 
 export async function callGraphQLWithSSR<T>(ssr: any, params: GraphQLOptions): Promise<GraphQLResult<T>> {
     return (await ssr.API.graphql(params)) as GraphQLResult<T>;
+}
+
+export async function getDefaultCollection() {
+    let input = {
+        configroot: 'config',
+        configid: 'defaultcollection'
+    };
+
+    // https://dev.to/rmuhlfeldner/how-to-use-an-aws-amplify-graphql-api-with-a-react-typescript-frontend-2g79
+    const { data } = await callGraphQLWithSimpleInput<GetConfigEntryQuery>(
+        {
+            query: getConfigEntry,
+            authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+            variables: input
+        }
+    );
+
+    return data;
+}
+
+export async function setDefaultCollection(collectionId: string, doCreate: boolean = false) {
+    var configEntry = {
+        configroot: 'config',
+        configid: 'defaultcollection',
+        value: collectionId,
+    };
+
+    var response = {
+        Success: false,
+        Message: ''
+    };
+
+    if (doCreate) {
+        // https://dev.to/rmuhlfeldner/how-to-use-an-aws-amplify-graphql-api-with-a-react-typescript-frontend-2g79
+        const { data } = await callGraphQL<CreateConfigEntryMutation>(
+            {
+                query: createConfigEntry,
+                authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+                variables: {
+                    input: configEntry
+                }
+            }
+        );
+
+        if (data &&
+            data.createConfigEntry &&
+            data.createConfigEntry.value === collectionId) {
+            response.Success = true;
+        } else {
+            response.Success = false;
+            response.Message = "Unable to create active collection entry";
+        }
+    } else {
+        // https://dev.to/rmuhlfeldner/how-to-use-an-aws-amplify-graphql-api-with-a-react-typescript-frontend-2g79
+        const { data } = await callGraphQL<UpdateConfigEntryMutation>(
+            {
+                query: updateConfigEntry,
+                authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+                variables: {
+                    input: configEntry
+                }
+            }
+        );
+
+        if (data &&
+            data.updateConfigEntry &&
+            data.updateConfigEntry.value === collectionId) {
+            response.Success = true;
+        } else {
+            response.Success = false;
+            response.Message = "Unable to update active collection entry";
+        }
+    }
+
+    return response;
 }

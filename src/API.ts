@@ -6,6 +6,8 @@ export type CreateCollectionResponse = {
   __typename: "CreateCollectionResponse",
   CollectionId?: string | null,
   Arn?: string | null,
+  Success?: boolean | null,
+  Message?: string | null,
 };
 
 export type RegisterNewUserResponse = {
@@ -133,6 +135,39 @@ export type DeleteUserInfoInput = {
   userid: string,
 };
 
+export type CreateConfigEntryInput = {
+  configroot: string,
+  configid: string,
+  value: string,
+};
+
+export type ModelConfigEntryConditionInput = {
+  value?: ModelStringInput | null,
+  and?: Array< ModelConfigEntryConditionInput | null > | null,
+  or?: Array< ModelConfigEntryConditionInput | null > | null,
+  not?: ModelConfigEntryConditionInput | null,
+};
+
+export type ConfigEntry = {
+  __typename: "ConfigEntry",
+  configroot: string,
+  configid: string,
+  value: string,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateConfigEntryInput = {
+  configroot: string,
+  configid: string,
+  value?: string | null,
+};
+
+export type DeleteConfigEntryInput = {
+  configroot: string,
+  configid: string,
+};
+
 export type CollectionResponse = {
   __typename: "CollectionResponse",
   CollectionId?: string | null,
@@ -207,6 +242,21 @@ export type ModelUserInfoConnection = {
   nextToken?: string | null,
 };
 
+export type ModelConfigEntryFilterInput = {
+  configroot?: ModelStringInput | null,
+  configid?: ModelStringInput | null,
+  value?: ModelStringInput | null,
+  and?: Array< ModelConfigEntryFilterInput | null > | null,
+  or?: Array< ModelConfigEntryFilterInput | null > | null,
+  not?: ModelConfigEntryFilterInput | null,
+};
+
+export type ModelConfigEntryConnection = {
+  __typename: "ModelConfigEntryConnection",
+  items?:  Array<ConfigEntry | null > | null,
+  nextToken?: string | null,
+};
+
 export type CreatecollectionMutationVariables = {
   collectionId?: string | null,
 };
@@ -216,6 +266,8 @@ export type CreatecollectionMutation = {
     __typename: "CreateCollectionResponse",
     CollectionId?: string | null,
     Arn?: string | null,
+    Success?: boolean | null,
+    Message?: string | null,
   } | null,
 };
 
@@ -344,6 +396,54 @@ export type DeleteUserInfoMutation = {
     faceimage?: string | null,
     faceid?: string | null,
     description?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateConfigEntryMutationVariables = {
+  input: CreateConfigEntryInput,
+  condition?: ModelConfigEntryConditionInput | null,
+};
+
+export type CreateConfigEntryMutation = {
+  createConfigEntry?:  {
+    __typename: "ConfigEntry",
+    configroot: string,
+    configid: string,
+    value: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateConfigEntryMutationVariables = {
+  input: UpdateConfigEntryInput,
+  condition?: ModelConfigEntryConditionInput | null,
+};
+
+export type UpdateConfigEntryMutation = {
+  updateConfigEntry?:  {
+    __typename: "ConfigEntry",
+    configroot: string,
+    configid: string,
+    value: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteConfigEntryMutationVariables = {
+  input: DeleteConfigEntryInput,
+  condition?: ModelConfigEntryConditionInput | null,
+};
+
+export type DeleteConfigEntryMutation = {
+  deleteConfigEntry?:  {
+    __typename: "ConfigEntry",
+    configroot: string,
+    configid: string,
+    value: string,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -522,6 +622,46 @@ export type UserInfoByRegStatusQuery = {
   } | null,
 };
 
+export type GetConfigEntryQueryVariables = {
+  configroot: string,
+  configid: string,
+};
+
+export type GetConfigEntryQuery = {
+  getConfigEntry?:  {
+    __typename: "ConfigEntry",
+    configroot: string,
+    configid: string,
+    value: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListConfigEntriesQueryVariables = {
+  configroot?: string | null,
+  configid?: ModelStringKeyConditionInput | null,
+  filter?: ModelConfigEntryFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+};
+
+export type ListConfigEntriesQuery = {
+  listConfigEntries?:  {
+    __typename: "ModelConfigEntryConnection",
+    items?:  Array< {
+      __typename: "ConfigEntry",
+      configroot: string,
+      configid: string,
+      value: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type OnCreateUserInfoSubscription = {
   onCreateUserInfo?:  {
     __typename: "UserInfo",
@@ -568,6 +708,39 @@ export type OnDeleteUserInfoSubscription = {
     faceimage?: string | null,
     faceid?: string | null,
     description?: string | null,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateConfigEntrySubscription = {
+  onCreateConfigEntry?:  {
+    __typename: "ConfigEntry",
+    configroot: string,
+    configid: string,
+    value: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateConfigEntrySubscription = {
+  onUpdateConfigEntry?:  {
+    __typename: "ConfigEntry",
+    configroot: string,
+    configid: string,
+    value: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteConfigEntrySubscription = {
+  onDeleteConfigEntry?:  {
+    __typename: "ConfigEntry",
+    configroot: string,
+    configid: string,
+    value: string,
     createdAt: string,
     updatedAt: string,
   } | null,

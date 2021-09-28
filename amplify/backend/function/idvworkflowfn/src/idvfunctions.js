@@ -65,18 +65,25 @@ module.exports = {
             CollectionId: collectionId
         };
 
+        var response = {
+            CollectionId: collectionId,
+            Arn: '',
+            Success: false,
+            Message: ''
+        };
+
         const rek = new Rekognition();
         try {
-            const response = await rek.createCollection(params).promise();
-            return {
-                CollectionId: collectionId,
-                Arn: response.CollectionArn
-            }
+            const createCollResponse = await rek.createCollection(params).promise();
+            response.Arn = createCollResponse.CollectionArn;
+            response.Success = true;
         }
         catch (e) {
-            console.log(e);
-            return {};
+            response.Success = false;
+            response.Message = JSON.stringify(e);
         }
+
+        return response;
     },
 
     listCollections: async function () {

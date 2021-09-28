@@ -7,6 +7,7 @@ import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
 import { callGraphQL, callGraphQLSimpleQuery } from "../common/common-types"
 import { createUserInfo, registernewuser } from "../src/graphql/mutations"
 import { CreateUserInfoMutation, RegisternewuserMutation } from "../src/API"
+import Alert from '../components/alert';
 import Link from "next/link";
 
 interface RegNewUserProps {
@@ -42,10 +43,6 @@ interface RegUserAction {
 interface RegFieldsProps {
     innerProps: RegNewUserProps,
     dispatch: Dispatch<RegUserAction>
-}
-
-interface AlertProps {
-    message: string,
 }
 
 const initialProps = { screenshot: '', userid: '', firstname: '', lastname: '', dob: '1999-01-01', busy: false, status: 'initial', alertMessage: ''  };
@@ -185,27 +182,6 @@ const SummaryRow = (props: SummaryRowData) => {
             <td className="header-cell">{props.header}</td>
             <td className="value-cell">{props.value}</td>
         </tr>
-    )
-}
-
-const Alert = (props: AlertProps) => {
-    const [state, setState] = useState({ showing: true });
-
-    const onClose = () => {
-        setState({ showing: false });
-    };
-
-    return (
-        <div className={`alert alert-danger alert-dismissible fade show ${state.showing ? "d-block" : "d-none"}`} role="alert">
-            <strong>Error!</strong> {props.message}
-            <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="alert"
-                onClick={onClose}
-                aria-label="Close">
-            </button>
-        </div>
     )
 }
 

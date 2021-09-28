@@ -10,6 +10,7 @@ import { createUserInfo, registernewuserwithidcard } from "../src/graphql/mutati
 import { CreateUserInfoMutation, RegisternewuserwithidcardMutation } from "../src/API"
 import Image from "next/image"
 import { getImageFromUploadComponent } from "../common/image-capture-helpers";
+import Alert from '../components/alert';
 import Link from "next/link";
 
 interface RegNewUserWithIdCardProps {
@@ -41,10 +42,6 @@ interface StoragePutResponse {
 interface RegUserAction {
     type: string,
     payload: string,
-}
-
-interface AlertProps {
-    message: string,
 }
 
 interface RegFieldsProps {
@@ -208,27 +205,6 @@ const SummaryRow = (props: SummaryRowData) => {
             <td className="header-cell">{props.header}</td>
             <td className="value-cell">{props.value}</td>
         </tr>
-    )
-}
-
-const Alert = (props: AlertProps) => {
-    const [state, setState] = useState({ showing: true });
-
-    const onClose = () => {
-        setState({ showing: false });
-    };
-
-    return (
-        <div className={`alert alert-danger alert-dismissible fade show ${state.showing ? "d-block" : "d-none"}`} role="alert">
-            <strong>Error!</strong> {props.message}
-            <button
-                type="button"
-                className="btn-close"
-                data-bs-dismiss="alert"
-                onClick={onClose}
-                aria-label="Close">
-            </button>
-        </div>
     )
 }
 

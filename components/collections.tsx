@@ -1,21 +1,33 @@
-import { callGraphQLSimpleQuery, callGraphQLWithSimpleInput } from "../common/common-types"
+import { callGraphQLSimpleQuery, callGraphQLWithSimpleInput, getDefaultCollection, setDefaultCollection } from "../common/common-types"
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
 import { useAsyncEffect } from "use-async-effect";
 import { DashboardProps } from "../common/dashboard-props";
 import { CreatecollectionMutation, ListcollectionsQuery, CollectionResponse, DescribecollectionQuery, DescribeCollectionResponse } from "../src/API";
 import { listcollections, describecollection } from "../src/graphql/queries";
 import { createcollection } from "../src/graphql/mutations";
-import { useState, SetStateAction, Dispatch } from "react";
+import Alert from '../components/alert';
+import React, { useState, SetStateAction, Dispatch } from "react";
+import { Button, Modal } from "react-bootstrap";
+import { CheckCircleFill } from 'react-bootstrap-icons';
 
 interface CollectionPageProps {
     collectionId: string,
     collections: DescribeCollectionResponse[],
     fetchState: string,
     isFetching: boolean,
+    alertMessage: string,
+    showModal: boolean,
+    defaultCollection: string,
 }
 
 function handleCollectionIdChange(event: any, state: CollectionPageProps, setState: Dispatch<SetStateAction<CollectionPageProps>>) {
-    setState({ collectionId: event.target.value, collections: state.collections, fetchState: 'handleCollectionIdChange', isFetching: state.isFetching });
+    setState({ collectionId: event.target.value,
+        collections: state.collections,
+        fetchState: 'handleCollectionIdChange',
+        isFetching: state.isFetching,
+        alertMessage: '',
+        showModal: false,
+        defaultCollection: '' });
 }
 
 async function fetchCollections(): Promise<DescribeCollectionResponse[]> {
@@ -50,39 +62,140 @@ async function fetchCollections(): Promise<DescribeCollectionResponse[]> {
     }
 }
 
-const onAddCollection = async (collectionId: string) => {
+const onAddCollection = async (pageProps: CollectionPageProps,
+    setState: Dispatch<SetStateAction<CollectionPageProps>>,
+    showModal: () => void,
+    closeModal: () => void) => {
 
-    const variables = { collectionId: collectionId };
-    const { data } = await callGraphQLSimpleQuery<CreatecollectionMutation>(
-        {
-            query: createcollection,
-            authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
-            variables: variables,
+    const variables = { collectionId: pageProps.collectionId };
+
+    showModal();
+
+    try {
+        const { data } = await callGraphQLSimpleQuery<CreatecollectionMutation>(
+            {
+                query: createcollection,
+                authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+                variables: variables,
+            }
+        );
+
+        closeModal();
+
+        if(!data?.createcollection?.Success) {
+            setState({ collectionId: pageProps.collectionId, 
+                collections: pageProps.collections, 
+                fetchState: pageProps.fetchState, 
+                isFetching: pageProps.isFetching, 
+                alertMessage: data?.createcollection?.Message as string,
+                showModal: pageProps.showModal,
+                defaultCollection: pageProps.defaultCollection });
         }
-    );
+    } catch (errors) {
+        closeModal();
+
+        setState({ collectionId: pageProps.collectionId, 
+            collections: pageProps.collections, 
+            fetchState: pageProps.fetchState, 
+            isFetching: pageProps.isFetching, 
+            alertMessage: JSON.stringify(errors),
+            showModal: pageProps.showModal,
+            defaultCollection: pageProps.defaultCollection });
+    }
 }
 
 export const Collections = (props: DashboardProps) => {
-    const [pageProps, setstate] = useState({ collectionId: '', collections: [] as DescribeCollectionResponse[], fetchState: 'initial', isFetching: true });
+    const [pageProps, setState] = useState({
+        collectionId: '',
+        collections: [] as DescribeCollectionResponse[],
+        fetchState: 'initial',
+        isFetching: true,
+        alertMessage: '',
+        showModal: false,
+        defaultCollection: '',
+    });
 
     useAsyncEffect(async isMounted => {
         if (pageProps.fetchState == 'initial') {
-            //setstate({collectionId: pageProps.collectionId, collections: [], fetchState: 'initial', isFetching: true});
+
+            const defaultColl = await getDefaultCollection();
+            console.log(defaultColl);
+
             const props = await fetchCollections();
             if (!isMounted()) return;
 
-            setstate({ collectionId: pageProps.collectionId, collections: props, fetchState: 'postLoad', isFetching: false });
+            var configEntryAlertMsg = '';
+            var defaultCollVal = '';
+            if(!defaultColl?.getConfigEntry) {
+                configEntryAlertMsg = 'No active collection configured. Please configure an active collection.'
+            } else {
+                defaultCollVal = defaultColl.getConfigEntry.value;
+            }
+
+            setState({
+                collectionId: pageProps.collectionId,
+                collections: props,
+                fetchState: 'postLoad',
+                isFetching: false,
+                alertMessage: configEntryAlertMsg ? configEntryAlertMsg : pageProps.alertMessage,
+                showModal: pageProps.showModal,
+                defaultCollection: defaultCollVal,
+            });
         }
     });
 
+    const handleClose = () => setState({
+        collectionId: pageProps.collectionId,
+        collections: pageProps.collections,
+        fetchState: pageProps.fetchState,
+        isFetching: pageProps.isFetching,
+        alertMessage: pageProps.alertMessage,
+        showModal: false,
+        defaultCollection: pageProps.defaultCollection,
+    });
+    const handleShow = () => setState({
+        collectionId: pageProps.collectionId,
+        collections: pageProps.collections,
+        fetchState: pageProps.fetchState,
+        isFetching: pageProps.isFetching,
+        alertMessage: pageProps.alertMessage,
+        showModal: true,
+        defaultCollection: pageProps.defaultCollection,
+    });
+    const handleMakeActiveColl = async (activeColl: string) => {
+        const response = await setDefaultCollection(activeColl);
+        if (response.Success) {
+            setState({
+                collectionId: pageProps.collectionId,
+                collections: pageProps.collections,
+                fetchState: pageProps.fetchState,
+                isFetching: pageProps.isFetching,
+                alertMessage: pageProps.alertMessage,
+                showModal: pageProps.showModal,
+                defaultCollection: activeColl,
+            });
+        } else {
+            setState({
+                collectionId: pageProps.collectionId,
+                collections: pageProps.collections,
+                fetchState: pageProps.fetchState,
+                isFetching: pageProps.isFetching,
+                alertMessage: response.Message,
+                showModal: pageProps.showModal,
+                defaultCollection: pageProps.defaultCollection,
+            });
+        }
+    };
+
     return (
         <div>
+            {pageProps.alertMessage && <Alert {...{ message: pageProps.alertMessage }} />}
             <div className={`${pageProps.isFetching ? "d-none" : "d-block"}`}>
-                <input type="text" value={pageProps.collectionId} onChange={(e) => handleCollectionIdChange(e, pageProps, setstate)} placeholder="New collection" autoFocus />
+                <input type="text" value={pageProps.collectionId} onChange={(e) => handleCollectionIdChange(e, pageProps, setState)} placeholder="New collection" autoFocus />
                 <button
-                    className="btn btn-primary"
+                    className="btn btn-primary btn-sm"
                     style={{ marginRight: 3, marginLeft: 15, marginBottom: 3 }}
-                    onClick={() => onAddCollection(pageProps.collectionId)}>
+                    onClick={() => onAddCollection(pageProps, setState, handleShow, handleClose)}>
                     Add
                 </button>
             </div>
@@ -90,31 +203,48 @@ export const Collections = (props: DashboardProps) => {
                 Fetching. Please wait...
             </div>
             <div className={`${pageProps.isFetching ? "d-none" : "d-block"}`}>
-                <table className="table table-striped" style={{ marginTop: 20 }}>
-                    <thead>
-                        <tr>
-                            <th>Collection Id</th>
-                            <th>Face count</th>
-                            <th>Face model version</th>
-                            <th>Creation timestamp</th>
-                            <th>Collection ARN</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div style={{marginTop: 10}}>
+                    <div className="list-group">
                         {pageProps.collections.map((item, index) => {
+                            var isActive = item.CollectionId === pageProps.defaultCollection;
                             return (
-                                <tr key={item.CollectionId}>
-                                    <td>{item.CollectionId}</td>
-                                    <td>{item.FaceCount}</td>
-                                    <td>{item.FaceModelVersion}</td>
-                                    <td>{item.CreationTimestamp}</td>
-                                    <td>{item.CollectionARN}</td>
-                                </tr>
+                                <div key={item.CollectionId} className="list-group-item list-group-item-action" aria-current="true">
+                                    <div className="d-flex w-100 justify-content-between">
+                                        <h5 className={`mb-1 ${isActive ? "text-primary" : ""}`}>
+                                            {isActive && <CheckCircleFill style={{marginRight: 3, marginBottom: 5}} />}
+                                            {item.CollectionId}
+                                        </h5>
+                                        <small><strong className="text-secondary">Face count: </strong>{item.FaceCount}</small>
+                                    </div>
+                                    <p className="mb-1"><strong className="text-secondary">ARN: </strong>{item.CollectionARN}</p>
+                                    <small className="d-block"><strong className="text-secondary">Created: </strong>{item.CreationTimestamp}</small>
+                                    <small className="d-block"><strong className="text-secondary">Face model: </strong>{item.FaceModelVersion}</small>
+                                    <button
+                                        onClick={() => handleMakeActiveColl(item.CollectionId as string)}
+                                        style={{ marginTop: 5 }}
+                                        className={`btn btn-sm btn-outline-primary ${isActive ? "d-none" : "d-block"}`}>
+                                        Make active
+                                    </button>
+                                </div>
                             );
                         })}
-                    </tbody>
-                </table>
+                    </div>
+                </div>
             </div>
+            <Modal show={pageProps.showModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Please wait...</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>Adding collection</Modal.Body>
+                {/* <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Close
+                    </Button>
+                    <Button variant="primary" onClick={handleClose}>
+                        Save Changes
+                    </Button>
+                </Modal.Footer> */}
+            </Modal>
         </div>
     );
 };

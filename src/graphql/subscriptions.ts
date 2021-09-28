@@ -53,3 +53,36 @@ export const onDeleteUserInfo = /* GraphQL */ `
     }
   }
 `;
+export const onCreateConfigEntry = /* GraphQL */ `
+  subscription OnCreateConfigEntry {
+    onCreateConfigEntry {
+      configroot
+      configid
+      value
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateConfigEntry = /* GraphQL */ `
+  subscription OnUpdateConfigEntry {
+    onUpdateConfigEntry {
+      configroot
+      configid
+      value
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteConfigEntry = /* GraphQL */ `
+  subscription OnDeleteConfigEntry {
+    onDeleteConfigEntry {
+      configroot
+      configid
+      value
+      createdAt
+      updatedAt
+    }
+  }
+`;

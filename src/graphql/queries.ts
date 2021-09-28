@@ -166,3 +166,42 @@ export const userInfoByRegStatus = /* GraphQL */ `
     }
   }
 `;
+export const getConfigEntry = /* GraphQL */ `
+  query GetConfigEntry($configroot: String!, $configid: String!) {
+    getConfigEntry(configroot: $configroot, configid: $configid) {
+      configroot
+      configid
+      value
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listConfigEntries = /* GraphQL */ `
+  query ListConfigEntries(
+    $configroot: String
+    $configid: ModelStringKeyConditionInput
+    $filter: ModelConfigEntryFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listConfigEntries(
+      configroot: $configroot
+      configid: $configid
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        configroot
+        configid
+        value
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

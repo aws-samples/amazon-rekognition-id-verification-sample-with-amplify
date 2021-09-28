@@ -7,6 +7,8 @@ export const createcollection = /* GraphQL */ `
     createcollection(collectionId: $collectionId) {
       CollectionId
       Arn
+      Success
+      Message
     }
   }
 `;
@@ -124,6 +126,48 @@ export const deleteUserInfo = /* GraphQL */ `
       faceimage
       faceid
       description
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createConfigEntry = /* GraphQL */ `
+  mutation CreateConfigEntry(
+    $input: CreateConfigEntryInput!
+    $condition: ModelConfigEntryConditionInput
+  ) {
+    createConfigEntry(input: $input, condition: $condition) {
+      configroot
+      configid
+      value
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateConfigEntry = /* GraphQL */ `
+  mutation UpdateConfigEntry(
+    $input: UpdateConfigEntryInput!
+    $condition: ModelConfigEntryConditionInput
+  ) {
+    updateConfigEntry(input: $input, condition: $condition) {
+      configroot
+      configid
+      value
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteConfigEntry = /* GraphQL */ `
+  mutation DeleteConfigEntry(
+    $input: DeleteConfigEntryInput!
+    $condition: ModelConfigEntryConditionInput
+  ) {
+    deleteConfigEntry(input: $input, condition: $condition) {
+      configroot
+      configid
+      value
       createdAt
       updatedAt
     }
