@@ -163,8 +163,8 @@ module.exports = {
                 response.Success = false;
             }
 
-            // 2. Use SearchFacesByImage against the collection(s) to check for any duplicate registration
             if (response.Success) {
+                // 2. Use SearchFacesByImage against the collection(s) to check for any duplicate registration
                 params = {
                     CollectionId: collectionId,
                     FaceMatchThreshold: 95,
