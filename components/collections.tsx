@@ -119,7 +119,6 @@ export const Collections = (props: DashboardProps) => {
         if (pageProps.fetchState == 'initial') {
 
             const defaultColl = await getDefaultCollection();
-            console.log(defaultColl);
 
             const props = await fetchCollections();
             if (!isMounted()) return;

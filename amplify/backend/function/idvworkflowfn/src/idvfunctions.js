@@ -140,7 +140,6 @@ module.exports = {
         const bucket = process.env.STORAGE_IDVIMAGEBUCKET_BUCKETNAME;
         const userInfoTable = process.env.API_AMAZONREKOGNITIONIDV_USERINFOTABLE_NAME;
 
-        const collectionId = "Coll1";
         const userInfo = JSON.parse(userInfoAsJson);
         var response = {
             Companyid: userInfo.companyid,
@@ -149,6 +148,13 @@ module.exports = {
             Success: true,
             Message: '',
         };
+
+        const collectionId = await graphqlhelpers.getActiveCollection();
+        if(!collectionId) {
+            response.Success = false;
+            response.Message = "Unable to fetch active collection";
+            return response;
+        }
 
         const rek = new Rekognition();
         try {
@@ -251,7 +257,6 @@ module.exports = {
         const bucket = process.env.STORAGE_IDVIMAGEBUCKET_BUCKETNAME;
         const userInfoTable = process.env.API_AMAZONREKOGNITIONIDV_USERINFOTABLE_NAME;
 
-        const collectionId = "Coll1";
         const userInfo = JSON.parse(userInfoAsJson);
         var response = {
             Companyid: userInfo.companyid,
@@ -260,6 +265,13 @@ module.exports = {
             Success: true,
             Message: '',
         };
+
+        const collectionId = await graphqlhelpers.getActiveCollection();
+        if(!collectionId) {
+            response.Success = false;
+            response.Message = "Unable to fetch active collection";
+            return response;
+        }
 
         const rek = new Rekognition();
         try {
@@ -392,7 +404,6 @@ module.exports = {
         const keyPrefix = "/public/";
         const userInfoTable = process.env.API_AMAZONREKOGNITIONIDV_USERINFOTABLE_NAME;
 
-        const collectionId = "Coll1";
         const userInfo = JSON.parse(userInfoAsJson);
         var response = {
             Companyid: userInfo.companyid,
@@ -400,6 +411,13 @@ module.exports = {
             Success: true,
             Message: '',
         };
+
+        const collectionId = await graphqlhelpers.getActiveCollection();
+        if(!collectionId) {
+            response.Success = false;
+            response.Message = "Unable to fetch active collection";
+            return response;
+        }
 
         const rek = new Rekognition(), s3client = new S3();
 
@@ -458,7 +476,6 @@ module.exports = {
         const keyPrefix = "/public/";
         const userInfoTable = process.env.API_AMAZONREKOGNITIONIDV_USERINFOTABLE_NAME;
 
-        const collectionId = "Coll1";
         const userInfo = JSON.parse(userInfoAsJson);
         var response = {
             Companyid: userInfo.companyid,
@@ -469,6 +486,13 @@ module.exports = {
             Success: true,
             Message: '',
         };
+
+        const collectionId = await graphqlhelpers.getActiveCollection();
+        if(!collectionId) {
+            response.Success = false;
+            response.Message = "Unable to fetch active collection";
+            return response;
+        }
 
         const rek = new Rekognition(), s3client = new S3();
 
@@ -523,13 +547,20 @@ module.exports = {
     },
 
     loginUser: async function (imageDataBase64) {
-        const collectionId = "Coll1";
+
         const rek = new Rekognition();
 
         var response = {
             Success: false,
             Message: ''
         };
+
+        const collectionId = await graphqlhelpers.getActiveCollection();
+        if(!collectionId) {
+            response.Success = false;
+            response.Message = "Unable to fetch active collection";
+            return response;
+        }
 
         var buf = Buffer.from(imageDataBase64, 'base64');
         var params = {

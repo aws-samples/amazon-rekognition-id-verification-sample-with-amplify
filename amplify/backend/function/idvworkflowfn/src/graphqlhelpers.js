@@ -8,7 +8,19 @@ const urlParse = require("url").URL;
 const region = process.env.REGION;
 const AWS = require("aws-sdk");
 
-const userInfoByFaceId = gql `
+const getConfigEntry = gql`
+  query GetConfigEntry($configroot: String!, $configid: String!) {
+    getConfigEntry(configroot: $configroot, configid: $configid) {
+      configroot
+      configid
+      value
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const userInfoByFaceId = gql`
   query UserInfoByFaceId(
     $companyid: String
     $faceid: ModelStringKeyConditionInput
@@ -66,7 +78,7 @@ function getSignedRequest(appsyncUrl, gqlQuery, opName, variables) {
 }
 
 module.exports = {
-  getUserInfoByFaceId: async function(companyId, faceId, appsyncUrl) {
+  getUserInfoByFaceId: async function (companyId, faceId, appsyncUrl) {
     const vars = {
       companyid: companyId,
       faceid: { eq: faceId },
@@ -103,6 +115,41 @@ module.exports = {
     }
     else {
       return data.userInfoByFaceId;
+    }
+  },
+
+  getActiveCollection: async function () {
+    const appsyncUrl = process.env.API_AMAZONREKOGNITIONIDV_GRAPHQLAPIENDPOINTOUTPUT;
+    const vars = {
+      configroot: 'config',
+      configid: 'defaultcollection',
+    };
+
+    var req = getSignedRequest(appsyncUrl, getConfigEntry, "GetConfigEntry", vars);
+
+    const { data } = await new Promise((resolve, reject) => {
+      const httpRequest = https.request({ ...req, host: req.headers.host }, (result) => {
+        let data = "";
+
+        result.on("data", (chunk) => {
+          data += chunk;
+        });
+
+        result.on("end", () => {
+          resolve(JSON.parse(data.toString()));
+        });
+      });
+
+      httpRequest.write(req.body);
+      httpRequest.end();
+    });
+
+    if (!data ||
+      !data.getConfigEntry) {
+      return null;
+    }
+    else {
+      return data.getConfigEntry.value;
     }
   }
 }
