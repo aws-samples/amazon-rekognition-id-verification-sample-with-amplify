@@ -40,6 +40,8 @@ async function deleteUser(uInfo: UserInfo, state: BrowseUsersProps, setState: Di
         }
     );
 
+    console.log(deleteUserResponse);
+
     setState({ userList: [] as UserInfo[], selectedUser: {} as UserInfo, fetchState: 'filterChanged', regStatusFilter: state.regStatusFilter })
 }
 

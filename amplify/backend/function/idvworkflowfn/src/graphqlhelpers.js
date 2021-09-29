@@ -134,6 +134,8 @@ function getSignedRequest(appsyncUrl, gqlQuery, opName, variables) {
     operationName: opName,
     variables: variables
   });
+  
+  console.log(req.body);
 
   const signer = new AWS.Signers.V4(req, "appsync", true);
   var credentials = new AWS.EnvironmentCredentials('AWS');
@@ -164,6 +166,16 @@ async function issueGQL(gqlQuery, opName, variables) {
       result.on("end", () => {
         resolve(JSON.parse(data.toString()));
       });
+      
+      result.on("error", (error) => {
+        console.log("In result error handler");
+        console.log(error);
+      });
+    });
+    
+    httpRequest.on("error", (error) => {
+      console.log("In request error handler");
+      console.log(error);
     });
 
     httpRequest.write(req.body);
@@ -180,7 +192,7 @@ module.exports = {
       faceid: { eq: faceId },
     };
 
-    var data = issueGQL(userInfoByFaceId, "UserInfoByFaceId", vars);
+    var data = await issueGQL(userInfoByFaceId, "UserInfoByFaceId", vars);
 
     if (!data) {
       return null;
@@ -196,7 +208,10 @@ module.exports = {
       configid: 'defaultcollection',
     };
 
-    var data = issueGQL(getConfigEntry, "GetConfigEntry", vars);
+    var data = await issueGQL(getConfigEntry, "GetConfigEntry", vars);
+    
+    console.log("Active coll");
+    console.log(data);
 
     if (!data ||
       !data.getConfigEntry) {
@@ -223,6 +238,7 @@ module.exports = {
     };
 
     var data = await issueGQL(createCachedCollectionList, "CreateCachedCollectionList", { input: input });
+    console.log(data);
 
     if (!data ||
       !data.createCachedCollectionList ||

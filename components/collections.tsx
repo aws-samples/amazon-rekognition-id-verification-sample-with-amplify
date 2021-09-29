@@ -27,7 +27,7 @@ function handleCollectionIdChange(event: any, state: CollectionPageProps, setSta
         isFetching: state.isFetching,
         alertMessage: '',
         showModal: false,
-        defaultCollection: '' });
+        defaultCollection: state.defaultCollection });
 }
 
 async function fetchCollections(): Promise<DescribeCollectionResponse[]> {
@@ -80,14 +80,23 @@ const onAddCollection = async (pageProps: CollectionPageProps,
             }
         );
 
-        closeModal();
-
         if(!data?.createcollection?.Success) {
+            closeModal();
             setState({ collectionId: pageProps.collectionId, 
                 collections: pageProps.collections, 
                 fetchState: pageProps.fetchState, 
                 isFetching: pageProps.isFetching, 
                 alertMessage: data?.createcollection?.Message as string,
+                showModal: pageProps.showModal,
+                defaultCollection: pageProps.defaultCollection });
+        } else {
+            const fetchedCollectionList = await fetchCollections();
+            closeModal();
+            setState({ collectionId: '', 
+                collections: fetchedCollectionList, 
+                fetchState: pageProps.fetchState, 
+                isFetching: pageProps.isFetching, 
+                alertMessage: pageProps.alertMessage,
                 showModal: pageProps.showModal,
                 defaultCollection: pageProps.defaultCollection });
         }
@@ -186,28 +195,34 @@ export const Collections = (props: DashboardProps) => {
         }
     };
     const handleDeleteColl = async (collectionId: string) => {
+        handleShow();
         const response = await deletecollectionFunc(collectionId);
-        if (response.Success) {
-            const fetchedCollectionList = await fetchCollections();
-            setState({
-                collectionId: pageProps.collectionId,
-                collections: fetchedCollectionList,
-                fetchState: pageProps.fetchState,
-                isFetching: pageProps.isFetching,
-                alertMessage: pageProps.alertMessage,
-                showModal: pageProps.showModal,
-                defaultCollection: pageProps.defaultCollection,
-            });
-        } else {
-            setState({
-                collectionId: pageProps.collectionId,
-                collections: pageProps.collections,
-                fetchState: pageProps.fetchState,
-                isFetching: pageProps.isFetching,
-                alertMessage: response.Message,
-                showModal: pageProps.showModal,
-                defaultCollection: pageProps.defaultCollection,
-            });
+        try {
+            if (response.Success) {
+                const fetchedCollectionList = await fetchCollections();
+                setState({
+                    collectionId: pageProps.collectionId,
+                    collections: fetchedCollectionList,
+                    fetchState: pageProps.fetchState,
+                    isFetching: pageProps.isFetching,
+                    alertMessage: pageProps.alertMessage,
+                    showModal: false,
+                    defaultCollection: pageProps.defaultCollection,
+                });
+            } else {
+                setState({
+                    collectionId: pageProps.collectionId,
+                    collections: pageProps.collections,
+                    fetchState: pageProps.fetchState,
+                    isFetching: pageProps.isFetching,
+                    alertMessage: response.Message,
+                    showModal: false,
+                    defaultCollection: pageProps.defaultCollection,
+                });
+            }
+        } catch (errors) {
+            handleClose();
+            console.log(errors);
         }
     };
 
@@ -264,9 +279,9 @@ export const Collections = (props: DashboardProps) => {
             </div>
             <Modal show={pageProps.showModal} onHide={handleClose}>
                 <Modal.Header closeButton>
-                    <Modal.Title>Please wait...</Modal.Title>
+                    <Modal.Title>Please wait</Modal.Title>
                 </Modal.Header>
-                <Modal.Body>Adding collection</Modal.Body>
+                <Modal.Body>Working...</Modal.Body>
                 {/* <Modal.Footer>
                     <Button variant="secondary" onClick={handleClose}>
                         Close
