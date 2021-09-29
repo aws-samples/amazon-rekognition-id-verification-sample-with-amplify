@@ -1,4 +1,4 @@
-import { callGraphQLSimpleQuery, callGraphQLWithSimpleInput, getDefaultCollection, setDefaultCollection } from "../common/common-types"
+import { callGraphQLSimpleQuery, callGraphQLWithSimpleInput, deletecollectionFunc, getDefaultCollection, setDefaultCollection } from "../common/common-types"
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
 import { useAsyncEffect } from "use-async-effect";
 import { DashboardProps } from "../common/dashboard-props";
@@ -120,7 +120,7 @@ export const Collections = (props: DashboardProps) => {
 
             const defaultColl = await getDefaultCollection();
 
-            const props = await fetchCollections();
+            const fetchedCollectionList = await fetchCollections();
             if (!isMounted()) return;
 
             var configEntryAlertMsg = '';
@@ -133,7 +133,7 @@ export const Collections = (props: DashboardProps) => {
 
             setState({
                 collectionId: pageProps.collectionId,
-                collections: props,
+                collections: fetchedCollectionList,
                 fetchState: 'postLoad',
                 isFetching: false,
                 alertMessage: configEntryAlertMsg ? configEntryAlertMsg : pageProps.alertMessage,
@@ -185,6 +185,31 @@ export const Collections = (props: DashboardProps) => {
             });
         }
     };
+    const handleDeleteColl = async (collectionId: string) => {
+        const response = await deletecollectionFunc(collectionId);
+        if (response.Success) {
+            const fetchedCollectionList = await fetchCollections();
+            setState({
+                collectionId: pageProps.collectionId,
+                collections: fetchedCollectionList,
+                fetchState: pageProps.fetchState,
+                isFetching: pageProps.isFetching,
+                alertMessage: pageProps.alertMessage,
+                showModal: pageProps.showModal,
+                defaultCollection: pageProps.defaultCollection,
+            });
+        } else {
+            setState({
+                collectionId: pageProps.collectionId,
+                collections: pageProps.collections,
+                fetchState: pageProps.fetchState,
+                isFetching: pageProps.isFetching,
+                alertMessage: response.Message,
+                showModal: pageProps.showModal,
+                defaultCollection: pageProps.defaultCollection,
+            });
+        }
+    };
 
     return (
         <div>
@@ -218,12 +243,19 @@ export const Collections = (props: DashboardProps) => {
                                     <p className="mb-1"><strong className="text-secondary">ARN: </strong>{item.CollectionARN}</p>
                                     <small className="d-block"><strong className="text-secondary">Created: </strong>{item.CreationTimestamp}</small>
                                     <small className="d-block"><strong className="text-secondary">Face model: </strong>{item.FaceModelVersion}</small>
-                                    <button
-                                        onClick={() => handleMakeActiveColl(item.CollectionId as string)}
-                                        style={{ marginTop: 5 }}
-                                        className={`btn btn-sm btn-outline-primary ${isActive ? "d-none" : "d-block"}`}>
-                                        Make active
-                                    </button>
+                                    <div className={`${isActive ? "d-none" : "d-block"}`} style={{ marginTop: 5 }}>
+                                        <button
+                                            onClick={() => handleMakeActiveColl(item.CollectionId as string)}
+                                            className={`btn btn-sm btn-outline-primary`}>
+                                            Make active
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteColl(item.CollectionId as string)}
+                                            style={{ marginLeft: 5 }}
+                                            className={`btn btn-sm btn-outline-danger`}>
+                                            Delete
+                                        </button>
+                                    </div>
                                 </div>
                             );
                         })}

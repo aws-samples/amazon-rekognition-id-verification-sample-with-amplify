@@ -205,3 +205,49 @@ export const listConfigEntries = /* GraphQL */ `
     }
   }
 `;
+export const getCachedCollectionList = /* GraphQL */ `
+  query GetCachedCollectionList($configroot: String!, $collectionid: String!) {
+    getCachedCollectionList(
+      configroot: $configroot
+      collectionid: $collectionid
+    ) {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const listCachedCollectionLists = /* GraphQL */ `
+  query ListCachedCollectionLists(
+    $configroot: String
+    $collectionid: ModelStringKeyConditionInput
+    $filter: ModelCachedCollectionListFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listCachedCollectionLists(
+      configroot: $configroot
+      collectionid: $collectionid
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        configroot
+        collectionid
+        arn
+        created
+        facemodel
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;

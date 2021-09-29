@@ -61,6 +61,9 @@ const resolvers = {
         createcollection: async (ctx) => {
             return await idvfunctions.createCollection(ctx.arguments.collectionId);
         },
+        deletecollection: async (ctx) => {
+            return await idvfunctions.deleteCollection(ctx.arguments.collectionId);
+        },
         registernewuser: async (ctx) => {
             return await idvfunctions.registerNewUser(ctx.arguments.userInfoAsJson);
         },

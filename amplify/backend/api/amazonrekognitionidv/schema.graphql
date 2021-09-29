@@ -29,9 +29,28 @@ type ConfigEntry @model
   value: String!
 }
 
+type CachedCollectionList @model
+@key(fields: ["configroot", "collectionid"])
+@auth(rules: [
+  { allow: private, provider: iam },
+  { allow: groups, groups: ["admin", "poweruser"] }
+]) {
+  configroot: String!
+  collectionid: String!
+  arn: String!
+  created: AWSDate!
+  facemodel: String!
+}
+
 type CreateCollectionResponse {
   CollectionId: String @aws_cognito_user_pools,
   Arn: String @aws_cognito_user_pools,
+  Success: Boolean @aws_cognito_user_pools,
+  Message: String @aws_cognito_user_pools,
+}
+
+type DeleteCollectionResponse {
+  CollectionId: String @aws_cognito_user_pools,
   Success: Boolean @aws_cognito_user_pools,
   Message: String @aws_cognito_user_pools,
 }
@@ -105,6 +124,7 @@ type Query
 type Mutation
 {
   createcollection(collectionId: String): CreateCollectionResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
+  deletecollection(collectionId: String): DeleteCollectionResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools(cognito_groups: ["admin"]),
   registernewuser(userInfoAsJson: String): RegisterNewUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
   registernewuserwithidcard(userInfoAsJson: String, faceImageDataBase64: String, idImageDataBase64: String): RegisterNewUserResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,
   updateexistinguserphoto(userInfoAsJson: String, faceImageDataBase64: String): UpdateUserPhotoResponse @function(name: "idvworkflowfn-${env}") @aws_cognito_user_pools,

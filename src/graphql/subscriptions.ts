@@ -86,3 +86,42 @@ export const onDeleteConfigEntry = /* GraphQL */ `
     }
   }
 `;
+export const onCreateCachedCollectionList = /* GraphQL */ `
+  subscription OnCreateCachedCollectionList {
+    onCreateCachedCollectionList {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onUpdateCachedCollectionList = /* GraphQL */ `
+  subscription OnUpdateCachedCollectionList {
+    onUpdateCachedCollectionList {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const onDeleteCachedCollectionList = /* GraphQL */ `
+  subscription OnDeleteCachedCollectionList {
+    onDeleteCachedCollectionList {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
+      createdAt
+      updatedAt
+    }
+  }
+`;

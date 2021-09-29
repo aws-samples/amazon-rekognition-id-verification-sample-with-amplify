@@ -74,9 +74,58 @@ module.exports = {
 
         const rek = new Rekognition();
         try {
+            // create collection using Rek API
             const createCollResponse = await rek.createCollection(params).promise();
             response.Arn = createCollResponse.CollectionArn;
-            response.Success = true;
+
+            // call describe collection so we can cache additional attributes
+            const describeCollResponse = await this.describeCollection(collectionId);
+
+            // update cached collections list (in Dynamo, via GraphQL API)
+            const createCachedCollResponse = await graphqlhelpers.createCachedCollection(describeCollResponse);
+            if(createCachedCollResponse.Success) {
+                response.Success = true;
+            } else {
+                response.Success = false;
+                response.Message = "Unable to create cached collection";
+            }
+        }
+        catch (e) {
+            response.Success = false;
+            response.Message = JSON.stringify(e);
+        }
+
+        return response;
+    },
+
+    deleteCollection: async function (collectionId) {
+        var params = {
+            CollectionId: collectionId
+        };
+
+        var response = {
+            CollectionId: collectionId,
+            Success: false,
+            Message: ''
+        };
+
+        const rek = new Rekognition();
+        try {
+            const deleteCollResponse = await rek.deleteCollection(params).promise();
+            if (deleteCollResponse &&
+                deleteCollResponse.StatusCode &&
+                deleteCollResponse.StatusCode == 200) {
+                
+                // now let's delete cached collection
+                const deleteCachedCollResponse = await graphqlhelpers.deleteCachedCollection(collectionId);
+                response.Success = deleteCachedCollResponse.Success;
+                if(!response.Success) {
+                    response.Message = "Unable to delete cached collection";
+                }
+            } else {
+                response.Success = false;
+                response.Message = "Unable to delete collection";
+            }
         }
         catch (e) {
             response.Success = false;
@@ -581,7 +630,7 @@ module.exports = {
         }
 
         const faceId = searchFacesResponse.FaceMatches[0].Face.FaceId;
-        const userInfo = await graphqlhelpers.getUserInfoByFaceId('Amazon', faceId, process.env.API_AMAZONREKOGNITIONIDV_GRAPHQLAPIENDPOINTOUTPUT);
+        const userInfo = await graphqlhelpers.getUserInfoByFaceId('Amazon', faceId);
         
         if(userInfo && userInfo.items && userInfo.items.length == 1) {
             response.Message = userInfo.items[0].userid;

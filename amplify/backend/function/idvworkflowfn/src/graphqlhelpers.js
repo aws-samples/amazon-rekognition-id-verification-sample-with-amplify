@@ -55,6 +55,71 @@ const userInfoByFaceId = gql`
   }
 `;
 
+const createCachedCollectionList = gql`
+  mutation CreateCachedCollectionList(
+    $input: CreateCachedCollectionListInput!
+    $condition: ModelCachedCollectionListConditionInput
+  ) {
+    createCachedCollectionList(input: $input, condition: $condition) {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const deleteCachedCollectionList = gql`
+  mutation DeleteCachedCollectionList(
+    $input: DeleteCachedCollectionListInput!
+    $condition: ModelCachedCollectionListConditionInput
+  ) {
+    deleteCachedCollectionList(input: $input, condition: $condition) {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const listCachedCollectionLists = gql`
+  query ListCachedCollectionLists(
+    $configroot: String
+    $collectionid: ModelStringKeyConditionInput
+    $filter: ModelCachedCollectionListFilterInput
+    $limit: Int
+    $nextToken: String
+    $sortDirection: ModelSortDirection
+  ) {
+    listCachedCollectionLists(
+      configroot: $configroot
+      collectionid: $collectionid
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      sortDirection: $sortDirection
+    ) {
+      items {
+        configroot
+        collectionid
+        arn
+        created
+        facemodel
+        createdAt
+        updatedAt
+      }
+      nextToken
+    }
+  }
+`;
+
 function getSignedRequest(appsyncUrl, gqlQuery, opName, variables) {
   const endpoint = new urlParse(appsyncUrl).hostname.toString();
 
@@ -77,38 +142,45 @@ function getSignedRequest(appsyncUrl, gqlQuery, opName, variables) {
   return req;
 }
 
+async function issueGQL(gqlQuery, opName, variables) {
+  const appsyncUrl = process.env.API_AMAZONREKOGNITIONIDV_GRAPHQLAPIENDPOINTOUTPUT;
+  var req = getSignedRequest(appsyncUrl, gqlQuery, opName, variables);
+
+  // const userInfoResponse = await axios({
+  //     method: 'post',
+  //     url: appsyncUrl,
+  //     data: req.body,
+  //     headers: req.headers
+  // });
+
+  const { data } = await new Promise((resolve, reject) => {
+    const httpRequest = https.request({ ...req, host: req.headers.host }, (result) => {
+      let data = "";
+
+      result.on("data", (chunk) => {
+        data += chunk;
+      });
+
+      result.on("end", () => {
+        resolve(JSON.parse(data.toString()));
+      });
+    });
+
+    httpRequest.write(req.body);
+    httpRequest.end();
+  });
+
+  return data;
+}
+
 module.exports = {
-  getUserInfoByFaceId: async function (companyId, faceId, appsyncUrl) {
+  getUserInfoByFaceId: async function (companyId, faceId) {
     const vars = {
       companyid: companyId,
       faceid: { eq: faceId },
     };
 
-    var req = getSignedRequest(appsyncUrl, userInfoByFaceId, "UserInfoByFaceId", vars);
-
-    // const userInfoResponse = await axios({
-    //     method: 'post',
-    //     url: appsyncUrl,
-    //     data: req.body,
-    //     headers: req.headers
-    // });
-
-    const { data } = await new Promise((resolve, reject) => {
-      const httpRequest = https.request({ ...req, host: req.headers.host }, (result) => {
-        let data = "";
-
-        result.on("data", (chunk) => {
-          data += chunk;
-        });
-
-        result.on("end", () => {
-          resolve(JSON.parse(data.toString()));
-        });
-      });
-
-      httpRequest.write(req.body);
-      httpRequest.end();
-    });
+    var data = issueGQL(userInfoByFaceId, "UserInfoByFaceId", vars);
 
     if (!data) {
       return null;
@@ -119,30 +191,12 @@ module.exports = {
   },
 
   getActiveCollection: async function () {
-    const appsyncUrl = process.env.API_AMAZONREKOGNITIONIDV_GRAPHQLAPIENDPOINTOUTPUT;
     const vars = {
       configroot: 'config',
       configid: 'defaultcollection',
     };
 
-    var req = getSignedRequest(appsyncUrl, getConfigEntry, "GetConfigEntry", vars);
-
-    const { data } = await new Promise((resolve, reject) => {
-      const httpRequest = https.request({ ...req, host: req.headers.host }, (result) => {
-        let data = "";
-
-        result.on("data", (chunk) => {
-          data += chunk;
-        });
-
-        result.on("end", () => {
-          resolve(JSON.parse(data.toString()));
-        });
-      });
-
-      httpRequest.write(req.body);
-      httpRequest.end();
-    });
+    var data = issueGQL(getConfigEntry, "GetConfigEntry", vars);
 
     if (!data ||
       !data.getConfigEntry) {
@@ -151,5 +205,61 @@ module.exports = {
     else {
       return data.getConfigEntry.value;
     }
+  },
+
+  createCachedCollection: async function (collectionEntry) {
+
+    const input = {
+      configroot: 'cachedcollectionlist',
+      collectionid: collectionEntry.CollectionId,
+      arn: collectionEntry.CollectionARN.replace(":", "-").replace("/", "-"),
+      created: "2021-09-29", //Date.parse(collectionEntry.CreationTimestamp),
+      facemodel: collectionEntry.FaceModelVersion
+    };
+
+    var response = {
+      Success: false,
+      Message: ''
+    };
+
+    var data = await issueGQL(createCachedCollectionList, "CreateCachedCollectionList", { input: input });
+
+    if (!data ||
+      !data.createCachedCollectionList ||
+      !data.createCachedCollectionList.collectionid) {
+      response.Success = false;
+      response.Message = "Unable to create cached collection entry";
+    }
+    else {
+      response.Success = true;
+    }
+
+    return response;
+  },
+
+  deleteCachedCollection: async function (collectionId) {
+    const input = {
+      configroot: 'cachedcollectionlist',
+      collectionid: collectionId
+    };
+
+    var response = {
+      Success: false,
+      Message: ''
+    };
+
+    var data = await issueGQL(deleteCachedCollectionList, "DeleteCachedCollectionList", { input: input });
+
+    if (!data ||
+      !data.deleteCachedCollectionList ||
+      !data.deleteCachedCollectionList.collectionid) {
+      response.Success = false;
+      response.Message = "Unable to delete cached collection entry";
+    }
+    else {
+      response.Success = true;
+    }
+
+    return response;
   }
 }

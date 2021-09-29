@@ -1,8 +1,8 @@
 import { API } from "aws-amplify";
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
-import { CreateConfigEntryMutation, GetConfigEntryQuery, UpdateConfigEntryMutation } from "../src/API";
+import { CreateConfigEntryMutation, DeletecollectionMutation, GetConfigEntryQuery, UpdateConfigEntryMutation } from "../src/API";
 import { getConfigEntry } from "../src/graphql/queries";
-import { createConfigEntry, updateConfigEntry } from "../src/graphql/mutations";
+import { createConfigEntry, deletecollection, updateConfigEntry } from "../src/graphql/mutations";
 
 export interface PageProps {
     username: string,
@@ -115,6 +115,36 @@ export async function setDefaultCollection(collectionId: string, doCreate: boole
             response.Success = false;
             response.Message = "Unable to update active collection entry";
         }
+    }
+
+    return response;
+}
+
+export async function deletecollectionFunc(collectionId: string) {
+    var vars = {
+        collectionId: collectionId
+    };
+
+    var response = {
+        Success: false,
+        Message: ''
+    };
+
+    const { data } = await callGraphQLSimpleQuery<DeletecollectionMutation>(
+        {
+            query: deletecollection,
+            authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+            variables: vars
+        }
+    );
+
+    if (data &&
+        data.deletecollection &&
+        data.deletecollection.CollectionId as string === collectionId) {
+        response.Success = true;
+    } else {
+        response.Success = false;
+        response.Message = "Unable to delete collection entry";
     }
 
     return response;

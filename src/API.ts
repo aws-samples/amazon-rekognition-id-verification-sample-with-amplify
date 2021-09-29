@@ -10,6 +10,13 @@ export type CreateCollectionResponse = {
   Message?: string | null,
 };
 
+export type DeleteCollectionResponse = {
+  __typename: "DeleteCollectionResponse",
+  CollectionId?: string | null,
+  Success?: boolean | null,
+  Message?: string | null,
+};
+
 export type RegisterNewUserResponse = {
   __typename: "RegisterNewUserResponse",
   Success?: boolean | null,
@@ -168,6 +175,47 @@ export type DeleteConfigEntryInput = {
   configid: string,
 };
 
+export type CreateCachedCollectionListInput = {
+  configroot: string,
+  collectionid: string,
+  arn: string,
+  created: string,
+  facemodel: string,
+};
+
+export type ModelCachedCollectionListConditionInput = {
+  arn?: ModelStringInput | null,
+  created?: ModelStringInput | null,
+  facemodel?: ModelStringInput | null,
+  and?: Array< ModelCachedCollectionListConditionInput | null > | null,
+  or?: Array< ModelCachedCollectionListConditionInput | null > | null,
+  not?: ModelCachedCollectionListConditionInput | null,
+};
+
+export type CachedCollectionList = {
+  __typename: "CachedCollectionList",
+  configroot: string,
+  collectionid: string,
+  arn: string,
+  created: string,
+  facemodel: string,
+  createdAt: string,
+  updatedAt: string,
+};
+
+export type UpdateCachedCollectionListInput = {
+  configroot: string,
+  collectionid: string,
+  arn?: string | null,
+  created?: string | null,
+  facemodel?: string | null,
+};
+
+export type DeleteCachedCollectionListInput = {
+  configroot: string,
+  collectionid: string,
+};
+
 export type CollectionResponse = {
   __typename: "CollectionResponse",
   CollectionId?: string | null,
@@ -257,6 +305,23 @@ export type ModelConfigEntryConnection = {
   nextToken?: string | null,
 };
 
+export type ModelCachedCollectionListFilterInput = {
+  configroot?: ModelStringInput | null,
+  collectionid?: ModelStringInput | null,
+  arn?: ModelStringInput | null,
+  created?: ModelStringInput | null,
+  facemodel?: ModelStringInput | null,
+  and?: Array< ModelCachedCollectionListFilterInput | null > | null,
+  or?: Array< ModelCachedCollectionListFilterInput | null > | null,
+  not?: ModelCachedCollectionListFilterInput | null,
+};
+
+export type ModelCachedCollectionListConnection = {
+  __typename: "ModelCachedCollectionListConnection",
+  items?:  Array<CachedCollectionList | null > | null,
+  nextToken?: string | null,
+};
+
 export type CreatecollectionMutationVariables = {
   collectionId?: string | null,
 };
@@ -266,6 +331,19 @@ export type CreatecollectionMutation = {
     __typename: "CreateCollectionResponse",
     CollectionId?: string | null,
     Arn?: string | null,
+    Success?: boolean | null,
+    Message?: string | null,
+  } | null,
+};
+
+export type DeletecollectionMutationVariables = {
+  collectionId?: string | null,
+};
+
+export type DeletecollectionMutation = {
+  deletecollection?:  {
+    __typename: "DeleteCollectionResponse",
+    CollectionId?: string | null,
     Success?: boolean | null,
     Message?: string | null,
   } | null,
@@ -444,6 +522,60 @@ export type DeleteConfigEntryMutation = {
     configroot: string,
     configid: string,
     value: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type CreateCachedCollectionListMutationVariables = {
+  input: CreateCachedCollectionListInput,
+  condition?: ModelCachedCollectionListConditionInput | null,
+};
+
+export type CreateCachedCollectionListMutation = {
+  createCachedCollectionList?:  {
+    __typename: "CachedCollectionList",
+    configroot: string,
+    collectionid: string,
+    arn: string,
+    created: string,
+    facemodel: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type UpdateCachedCollectionListMutationVariables = {
+  input: UpdateCachedCollectionListInput,
+  condition?: ModelCachedCollectionListConditionInput | null,
+};
+
+export type UpdateCachedCollectionListMutation = {
+  updateCachedCollectionList?:  {
+    __typename: "CachedCollectionList",
+    configroot: string,
+    collectionid: string,
+    arn: string,
+    created: string,
+    facemodel: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type DeleteCachedCollectionListMutationVariables = {
+  input: DeleteCachedCollectionListInput,
+  condition?: ModelCachedCollectionListConditionInput | null,
+};
+
+export type DeleteCachedCollectionListMutation = {
+  deleteCachedCollectionList?:  {
+    __typename: "CachedCollectionList",
+    configroot: string,
+    collectionid: string,
+    arn: string,
+    created: string,
+    facemodel: string,
     createdAt: string,
     updatedAt: string,
   } | null,
@@ -662,6 +794,50 @@ export type ListConfigEntriesQuery = {
   } | null,
 };
 
+export type GetCachedCollectionListQueryVariables = {
+  configroot: string,
+  collectionid: string,
+};
+
+export type GetCachedCollectionListQuery = {
+  getCachedCollectionList?:  {
+    __typename: "CachedCollectionList",
+    configroot: string,
+    collectionid: string,
+    arn: string,
+    created: string,
+    facemodel: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type ListCachedCollectionListsQueryVariables = {
+  configroot?: string | null,
+  collectionid?: ModelStringKeyConditionInput | null,
+  filter?: ModelCachedCollectionListFilterInput | null,
+  limit?: number | null,
+  nextToken?: string | null,
+  sortDirection?: ModelSortDirection | null,
+};
+
+export type ListCachedCollectionListsQuery = {
+  listCachedCollectionLists?:  {
+    __typename: "ModelCachedCollectionListConnection",
+    items?:  Array< {
+      __typename: "CachedCollectionList",
+      configroot: string,
+      collectionid: string,
+      arn: string,
+      created: string,
+      facemodel: string,
+      createdAt: string,
+      updatedAt: string,
+    } | null > | null,
+    nextToken?: string | null,
+  } | null,
+};
+
 export type OnCreateUserInfoSubscription = {
   onCreateUserInfo?:  {
     __typename: "UserInfo",
@@ -741,6 +917,45 @@ export type OnDeleteConfigEntrySubscription = {
     configroot: string,
     configid: string,
     value: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnCreateCachedCollectionListSubscription = {
+  onCreateCachedCollectionList?:  {
+    __typename: "CachedCollectionList",
+    configroot: string,
+    collectionid: string,
+    arn: string,
+    created: string,
+    facemodel: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnUpdateCachedCollectionListSubscription = {
+  onUpdateCachedCollectionList?:  {
+    __typename: "CachedCollectionList",
+    configroot: string,
+    collectionid: string,
+    arn: string,
+    created: string,
+    facemodel: string,
+    createdAt: string,
+    updatedAt: string,
+  } | null,
+};
+
+export type OnDeleteCachedCollectionListSubscription = {
+  onDeleteCachedCollectionList?:  {
+    __typename: "CachedCollectionList",
+    configroot: string,
+    collectionid: string,
+    arn: string,
+    created: string,
+    facemodel: string,
     createdAt: string,
     updatedAt: string,
   } | null,

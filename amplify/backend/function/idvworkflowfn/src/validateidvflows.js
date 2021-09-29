@@ -48,6 +48,14 @@ module.exports = {
         response.message = "Found duplicate face";
         return response;
     },
+    validateDuplicateCheckForMultipleSearches: async function(multiSearchResponses) {
+        var response = {
+            success: false,
+            message: 'Unable to perform duplicate check'
+        };
+
+        return response;
+    },
     validateFaceComparison: function(compareFacesResponse) {
         var response = {
             success: false,

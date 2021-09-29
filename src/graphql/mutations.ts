@@ -12,6 +12,15 @@ export const createcollection = /* GraphQL */ `
     }
   }
 `;
+export const deletecollection = /* GraphQL */ `
+  mutation Deletecollection($collectionId: String) {
+    deletecollection(collectionId: $collectionId) {
+      CollectionId
+      Success
+      Message
+    }
+  }
+`;
 export const registernewuser = /* GraphQL */ `
   mutation Registernewuser($userInfoAsJson: String) {
     registernewuser(userInfoAsJson: $userInfoAsJson) {
@@ -168,6 +177,54 @@ export const deleteConfigEntry = /* GraphQL */ `
       configroot
       configid
       value
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const createCachedCollectionList = /* GraphQL */ `
+  mutation CreateCachedCollectionList(
+    $input: CreateCachedCollectionListInput!
+    $condition: ModelCachedCollectionListConditionInput
+  ) {
+    createCachedCollectionList(input: $input, condition: $condition) {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const updateCachedCollectionList = /* GraphQL */ `
+  mutation UpdateCachedCollectionList(
+    $input: UpdateCachedCollectionListInput!
+    $condition: ModelCachedCollectionListConditionInput
+  ) {
+    updateCachedCollectionList(input: $input, condition: $condition) {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
+      createdAt
+      updatedAt
+    }
+  }
+`;
+export const deleteCachedCollectionList = /* GraphQL */ `
+  mutation DeleteCachedCollectionList(
+    $input: DeleteCachedCollectionListInput!
+    $condition: ModelCachedCollectionListConditionInput
+  ) {
+    deleteCachedCollectionList(input: $input, condition: $condition) {
+      configroot
+      collectionid
+      arn
+      created
+      facemodel
       createdAt
       updatedAt
     }
