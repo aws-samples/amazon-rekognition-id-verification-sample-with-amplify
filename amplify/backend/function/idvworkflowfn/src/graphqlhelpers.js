@@ -134,8 +134,6 @@ function getSignedRequest(appsyncUrl, gqlQuery, opName, variables) {
     operationName: opName,
     variables: variables
   });
-  
-  console.log(req.body);
 
   const signer = new AWS.Signers.V4(req, "appsync", true);
   var credentials = new AWS.EnvironmentCredentials('AWS');
@@ -209,9 +207,6 @@ module.exports = {
     };
 
     var data = await issueGQL(getConfigEntry, "GetConfigEntry", vars);
-    
-    console.log("Active coll");
-    console.log(data);
 
     if (!data ||
       !data.getConfigEntry) {
@@ -238,7 +233,6 @@ module.exports = {
     };
 
     var data = await issueGQL(createCachedCollectionList, "CreateCachedCollectionList", { input: input });
-    console.log(data);
 
     if (!data ||
       !data.createCachedCollectionList ||

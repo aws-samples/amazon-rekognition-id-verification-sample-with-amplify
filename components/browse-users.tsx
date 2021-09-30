@@ -46,11 +46,10 @@ async function deleteUser(uInfo: UserInfo, state: BrowseUsersProps, setState: Di
 }
 
 async function fetchUsers(regStatusFilter: string = 'done'): Promise<UserInfo[]> {
-    var userInfo = await Auth.currentAuthenticatedUser();
 
     let input = {
         companyid: 'Amazon',
-        registrationstatus: regStatusFilter == 'done' ? {eq: 'done'} : {beginsWith: 'initial'},
+        registrationstatus: regStatusFilter == 'done' ? {eq: 'done'} : {beginsWith: 'error-'},
         limit: 12,
     };
 
@@ -113,8 +112,6 @@ const UserDetail = (propsWithStateInfo: BrowseUsersPropsWithStateInfo) => {
                     </div>
                     <ul className="list-group list-group-flush">
                         <li className="list-group-item">{'Face id: ' + uInfo.faceid}</li>
-                        <li className="list-group-item">A second item</li>
-                        <li className="list-group-item">A third item</li>
                     </ul>
                     <div className="card-body d-flex justify-content-center">
                         <a
@@ -204,6 +201,10 @@ const UserList = (propsWithStateInfo: BrowseUsersPropsWithStateInfo) => {
                         <UserEntry key={uInfo.userid} {...userRowWithStateInfo} />
                     );
                 })}
+            </div>
+            <div className={`${props.userList.length <= 0 ? "d-block" : "d-none"} alert alert-info`}
+                 style={{ marginLeft: 10, marginRight: 10 }}>
+                { props.fetchState === 'postLoad' ? 'No users' : 'Please wait...' }
             </div>
         </div>
     )

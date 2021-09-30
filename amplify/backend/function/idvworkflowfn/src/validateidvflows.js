@@ -14,12 +14,24 @@ module.exports = {
             return response;
         }
 
+        // make sure there's exactly once face in the pic
         if (!detectFacesResponse.FaceDetails || detectFacesResponse.FaceDetails.length != 1) {
             response.success = false;
             response.message = "Either no face or multiple faces in detectFacesResponse";
             return response;
         }
 
+        // Example of how to you use the 'Roll' metric under 'Pose'
+        // to ensure that the face is relatively straight.
+        // You can also consult 'Pitch' and 'Yaw' to perform checks for
+        // your needs.
+        if (Math.abs(detectFacesResponse.FaceDetails[0].Pose.Roll) > 10) {
+            response.success = false;
+            response.message = 'Please straighten face';
+            return response;
+        }
+
+        // tweak the confidence threshold here for your needs
         if (detectFacesResponse.FaceDetails[0].Confidence > 90) {
             response.success = true;
             response.message = '';

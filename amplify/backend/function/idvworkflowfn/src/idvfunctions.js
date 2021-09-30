@@ -4,27 +4,33 @@ var graphqlhelpers = require('./graphqlhelpers');
 
 async function updateUserInfo(userInfoTable, userInfo, externalImageId, regStatus) {
     var docClient = new DynamoDB.DocumentClient();
+
+    var updateExpression = externalImageId ? 
+    "set faceid = :fid, registrationstatus = :rs" :
+    "set registrationstatus = :rs";
+
+    var exprAttributeValues = externalImageId ? 
+    { ":fid": externalImageId, ":rs": regStatus, } :
+    { ":rs": regStatus, };
+
     var ddbParams = {
         TableName: userInfoTable,
         Key: {
             "companyid": 'Amazon',
             "userid": userInfo.userid
         },
-        UpdateExpression: "set faceid = :fid, registrationstatus = :rs",
-        ExpressionAttributeValues: {
-            ":fid": externalImageId,
-            ":rs": regStatus,
-        },
+        UpdateExpression: updateExpression,
+        ExpressionAttributeValues: exprAttributeValues,
         ReturnValues: "UPDATED_NEW"
     }
     var ddbUpdateResponse = await docClient.update(ddbParams).promise();
     if (ddbUpdateResponse &&
-        ddbUpdateResponse.Attributes &&
-        ddbUpdateResponse.Attributes.faceid &&
-        ddbUpdateResponse.Attributes.faceid == externalImageId) {
+        ddbUpdateResponse.Attributes) {
         return {
             success: true
         }
+    } else {
+        console.log(ddbUpdateResponse);
     }
 
     return {
@@ -193,7 +199,7 @@ module.exports = {
         var response = {
             Companyid: userInfo.companyid,
             UserId: userInfo.userid,
-            RegistrationStatus: 'failed',
+            RegistrationStatus: 'error-failed',
             Success: true,
             Message: '',
         };
@@ -221,7 +227,7 @@ module.exports = {
             const detectFacesValidation = validateidv.validateDetectFacesResponse(detectFacesResponse);
             if (!detectFacesValidation.success) {
                 response.Message = detectFacesValidation.message;
-                response.RegistrationStatus = 'detectfaces-failed';
+                response.RegistrationStatus = 'error-detectfaces-failed';
                 response.Success = false;
             }
 
@@ -237,11 +243,12 @@ module.exports = {
                 const duplicateCheckResponse = validateidv.validateDuplicateCheck(searchFacesResponse);
                 if (!duplicateCheckResponse.success) {
                     response.Message = duplicateCheckResponse.message;
-                    response.RegistrationStatus = 'duplicate-found';
+                    response.RegistrationStatus = 'error-duplicate-found';
                     response.Success = false;
                 }
             }
 
+            // 0 for faces that haven't indexed in a collection yet
             var faceId = "";
 
             // 3. Index the face image using IndexFaces and use the ExternalImageId (userid, in this case)
@@ -259,11 +266,14 @@ module.exports = {
                     !indexFaceResponse.FaceRecords ||
                     indexFaceResponse.FaceRecords.length != 1) {
                     response.Message = 'IndexFaces failed';
-                    response.RegistrationStatus = 'indexfaces-failed';
+                    response.RegistrationStatus = 'error-indexfaces-failed';
                     response.Success = false;
                 } else {
                     faceId = indexFaceResponse.FaceRecords[0].Face.FaceId;
                     response.RegistrationStatus = 'done';
+                    response.Success = true;
+
+                    console.log("Successfully registered user");
                 }
             }
 
@@ -272,12 +282,11 @@ module.exports = {
             const ddbResponse = await updateUserInfo(userInfoTable, userInfo, faceId, response.RegistrationStatus);
             if (!ddbResponse.success) {
                 response.Message = 'UserInfo ddb update failed!';
-                response.RegistrationStatus = 'userinfo-ddb-failed';
+                response.RegistrationStatus = 'error-userinfo-ddb-failed';
                 response.Success = false;
             }
             else {
-                response.Success = true;
-                response.Message = '';
+                // Leave message and status as is
             }
         }
         catch (e) {
@@ -571,7 +580,6 @@ module.exports = {
                 };
 
                 const s3DeleteResponse = await s3client.deleteObject(params).promise();
-                            console.log(s3DeleteResponse);
             }
 
             // 3. delete ddb entry

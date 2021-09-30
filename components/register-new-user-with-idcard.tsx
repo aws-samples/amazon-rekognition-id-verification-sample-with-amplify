@@ -6,8 +6,8 @@ import React, { useReducer, useRef } from "react";
 import { useCallback, SetStateAction, useState, Dispatch, ReducerAction } from "react";
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
 import { callGraphQL, callGraphQLSimpleQuery } from "../common/common-types"
-import { createUserInfo, registernewuserwithidcard } from "../src/graphql/mutations"
-import { CreateUserInfoMutation, RegisternewuserwithidcardMutation } from "../src/API"
+import { createUserInfo, deleteuser, registernewuserwithidcard } from "../src/graphql/mutations"
+import { CreateUserInfoMutation, DeleteuserMutation, RegisternewuserwithidcardMutation } from "../src/API"
 import Image from "next/image"
 import { getImageFromUploadComponent } from "../common/image-capture-helpers";
 import Alert from '../components/alert';
@@ -127,10 +127,32 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
             return;
         }
 
+        dispatch({ type: 'alertMessage', payload: '' });
         dispatch({ type: 'busy', payload: 'true' });
 
-        // first store image in s3 bucket
+        // create ddb entry first
         var filename = "regimages/" + props.userid + ".jpg";
+        var userInfo = {
+            companyid: 'Amazon',
+            userid: props.userid,
+            firstname: props.firstname,
+            lastname: props.lastname,
+            dob: props.dob,
+            registrationstatus: 'error-initialentry',
+            faceimage: filename,
+        }
+
+        const createUserResponse = await callGraphQL<CreateUserInfoMutation>(
+            {
+                query: createUserInfo,
+                authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+                variables: {
+                    input: userInfo
+                }
+            }
+        );
+
+        // then store image in s3 bucket
         let imageData = await fetch(props.screenshot);
         let blob = await imageData.blob();
         const storageResponse = await Storage.put(filename,
@@ -146,28 +168,6 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
             dispatch({ type: 'busy', payload: 'false' });
             return;
         }
-
-        var userInfo = {
-            companyid: 'Amazon',
-            userid: props.userid,
-            firstname: props.firstname,
-            lastname: props.lastname,
-            dob: props.dob,
-            registrationstatus: 'initialentry',
-            faceimage: filename,
-        };
-
-        // create ddb entry and mark it as initial entry
-        // https://dev.to/rmuhlfeldner/how-to-use-an-aws-amplify-graphql-api-with-a-react-typescript-frontend-2g79
-        const createUserResponse = await callGraphQL<CreateUserInfoMutation>(
-            {
-                query: createUserInfo,
-                authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
-                variables: {
-                    input: userInfo
-                }
-            }
-        );
 
         // call api to run through idv new user registration flow
         // see lambda function idvworkflowfn for more details
@@ -186,14 +186,25 @@ async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<R
         );
 
         if (!registerUserResponse.data?.registernewuserwithidcard?.Success) {
+            // cleanup
+            console.log("Cleaning up incomplete user registration...")
+            const variables = { userInfoAsJson: JSON.stringify(userInfo) };
+            const deleteUserResponse = await callGraphQLSimpleQuery<DeleteuserMutation>(
+                {
+                    query: deleteuser,
+                    authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+                    variables: variables,
+                }
+            );
+            console.log("Done cleaning up incomplete user registration...")
+
             dispatch({ type: 'alertMessage', payload: registerUserResponse.data?.registernewuserwithidcard?.Message as string });
             dispatch({ type: 'busy', payload: 'false' });
         } else {
             dispatch({ type: 'success', payload: '' });
-            //window.location.assign('/login-user');
         }
     } catch (errors) {
-        dispatch({ type: 'alertMessage', payload: JSON.stringify(errors) });
+        dispatch({ type: 'alertMessage', payload: 'Possible duplicate key. ' + JSON.stringify(errors) });
         dispatch({ type: 'busy', payload: 'false' });
         console.log(errors);
     }
