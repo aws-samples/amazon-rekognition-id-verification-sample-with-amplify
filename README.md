@@ -39,7 +39,14 @@ First you'll need to install npm, if you don't already have it installed. Please
 
 Next, if you don't have the AWS Amplify CLI installed, please follow the instructions at [AWS Amplify - Installation](https://docs.amplify.aws/cli/start/install/).
 
-## Deploying sample app
+## Deploying the sample app w/ one click deployment to the Amplify console
+
+Simply click on the link below:
+
+[![amplifybutton](https://oneclick.amplifyapp.com/button.svg)](https://console.aws.amazon.com/amplify/home#/deploy?repo=https://github.com/aws-samples/amazon-rekognition-id-verification-sample-with-amplify)
+
+
+## Deploying sample app using the CLI
 
 1. Clone the git repo on your local machine
 
