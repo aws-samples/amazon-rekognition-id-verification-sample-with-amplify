@@ -5,13 +5,16 @@ import ImageUploading from 'react-images-uploading'
 import React, { useReducer, useRef } from "react";
 import { useCallback, SetStateAction, useState, Dispatch, ReducerAction } from "react";
 import { GraphQLResult, GRAPHQL_AUTH_MODE } from "@aws-amplify/api";
-import { callGraphQL, callGraphQLSimpleQuery } from "../common/common-types"
+import { callGraphQL, callGraphQLSimpleQuery, callGraphQLWithSimpleInput } from "../common/common-types"
 import { createUserInfo, deleteuser, registernewuserwithidcard } from "../src/graphql/mutations"
-import { CreateUserInfoMutation, DeleteuserMutation, RegisternewuserwithidcardMutation } from "../src/API"
+import { detecttextinidcard } from "../src/graphql/queries"
+import { CreateUserInfoMutation, DeleteuserMutation, RegisternewuserwithidcardMutation, DetecttextinidcardQuery } from "../src/API"
 import Image from "next/image"
 import { getImageFromUploadComponent } from "../common/image-capture-helpers";
+import { Button, Modal } from "react-bootstrap";
 import Alert from '../components/alert';
 import Link from "next/link";
+import { CardText } from 'react-bootstrap-icons';
 
 interface RegNewUserWithIdCardProps {
     screenshot: string,
@@ -22,7 +25,11 @@ interface RegNewUserWithIdCardProps {
     busy: boolean,
     status: string,
     idCard: any,
+    showTextCopyModal: boolean,
     alertMessage: string,
+    affectedField: string,
+    showCardTextButton: boolean,
+    pastableText: string[],
 }
 
 interface SubmissionSummaryProps {
@@ -49,7 +56,20 @@ interface RegFieldsProps {
     dispatch: Dispatch<RegUserAction>
 }
 
-const initialProps = { screenshot: '', userid: '', firstname: '', lastname: '', dob: '1999-01-01', busy: false, status: 'initial', idCard: null, alertMessage: '' };
+const initialProps = { screenshot: '', 
+                       userid: '',
+                       firstname: '',
+                       lastname: '',
+                       dob: '1999-01-01',
+                       busy: false,
+                       status: 'initial',
+                       idCard: null,
+                       showTextCopyModal: false,
+                       alertMessage: '',
+                       pastableText: [],
+                       affectedField: '',
+                       showCardTextButton: false
+                    };
 
 function reducer(state: RegNewUserWithIdCardProps, action: RegUserAction) {
     switch (action.type) {
@@ -101,6 +121,26 @@ function reducer(state: RegNewUserWithIdCardProps, action: RegUserAction) {
                 ...state,
                 idCard: action.payload,
             };
+        case 'showTextCopyModal':
+            return {
+                ...state,
+                showTextCopyModal: (action.payload == "true"),
+            };
+        case 'showCardTextButton':
+            return {
+                ...state,
+                showCardTextButton: (action.payload == "true"),
+            };
+        case 'affectedField':
+            return {
+                ...state,
+                affectedField: action.payload,
+            };
+        case 'pastableText':
+            return {
+                ...state,
+                pastableText: action.payload.split("|"),
+            };
         default:
             return state;
     }
@@ -117,6 +157,39 @@ function validateFields(props: RegNewUserWithIdCardProps) {
     }
 
     return true;
+}
+
+async function fetchTextInCard(imageBytesb64: string, props: RegNewUserWithIdCardProps, dispatch: Dispatch<RegUserAction>) {
+    let input = {
+        imageDataBase64: imageBytesb64
+    };
+
+    dispatch({ type: 'pastableText', payload: '' });
+    dispatch({ type: 'showCardTextButton', payload: 'false' });
+
+    try {
+        // https://dev.to/rmuhlfeldner/how-to-use-an-aws-amplify-graphql-api-with-a-react-typescript-frontend-2g79
+        const { data } = await callGraphQLWithSimpleInput<DetecttextinidcardQuery>(
+            {
+                query: detecttextinidcard,
+                authMode: GRAPHQL_AUTH_MODE.AMAZON_COGNITO_USER_POOLS,
+                variables: input
+            }
+        );
+
+        if (data?.detecttextinidcard?.DetectedText &&
+            data.detecttextinidcard.DetectedText.length > 0) {
+            var pastableText = '';
+            for (var i = 0; i < data.detecttextinidcard.DetectedText.length; i++) {
+                pastableText = pastableText + data.detecttextinidcard.DetectedText[i] + "|";
+            }
+
+            dispatch({ type: 'pastableText', payload: pastableText });
+            dispatch({ type: 'showCardTextButton', payload: 'true' });
+        }
+    }
+    catch (errors) {
+    }
 }
 
 async function submitUser(props: RegNewUserWithIdCardProps, dispatch: Dispatch<RegUserAction>) {
@@ -256,16 +329,40 @@ const SubmissionSummary = (props: SubmissionSummaryProps) => {
 const RegistrationFields = (iProps: RegFieldsProps) => {
     const props = iProps.innerProps;
     const dispatch = iProps.dispatch;
+    const onCardTextClick = (affectedField: string) => {
+        dispatch({ type: 'affectedField', payload: affectedField });
+        dispatch({ type: 'showTextCopyModal', payload: "true" });
+    };
     return (
         <div>
             <div className="mb-3">
                 <label className="form-label">User Id</label>
+                <button className={`btn btn-link text-decoration-none ${props.showCardTextButton ? "d-inline" : "d-none"}`}
+                    style={{ marginBottom: 6, marginLeft: 4, padding: 0 }}
+                    onClick={() => onCardTextClick('userid')}>
+                    <CardText />
+                </button>
                 <input type="text" className="form-control" id="userid" value={props.userid} onChange={(e) => dispatch({ type: 'userid', payload: e.target.value })} />
                 <label className="form-label">First name</label>
+                <button className={`btn btn-link text-decoration-none ${props.showCardTextButton ? "d-inline" : "d-none"}`}
+                    style={{ marginBottom: 6, marginLeft: 4, padding: 0 }}
+                    onClick={() => onCardTextClick('firstname')}>
+                    <CardText />
+                </button>
                 <input type="text" className="form-control" id="firstname" value={props.firstname} onChange={(e) => dispatch({ type: 'firstname', payload: e.target.value })} />
                 <label className="form-label">Last name</label>
+                <button className={`btn btn-link text-decoration-none ${props.showCardTextButton ? "d-inline" : "d-none"}`}
+                    style={{ marginBottom: 6, marginLeft: 4, padding: 0 }}
+                    onClick={() => onCardTextClick('lastname')}>
+                    <CardText />
+                </button>
                 <input type="text" className="form-control" id="lastname" value={props.lastname} onChange={(e) => dispatch({ type: 'lastname', payload: e.target.value })} />
                 <label className="form-label">Date of birth</label>
+                <button className={`btn btn-link text-decoration-none ${props.showCardTextButton ? "d-inline" : "d-none"}`}
+                    style={{ marginBottom: 6, marginLeft: 4, padding: 0 }}
+                    onClick={() => onCardTextClick('dob')}>
+                    <CardText />
+                </button>
                 <input type="text" className="form-control" id="dob" value={props.dob} onChange={(e) => dispatch({ type: 'dob', payload: e.target.value })} />
             </div>
         </div>
@@ -300,12 +397,22 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
 
     const onChange = async (imageList: any, addUpdateIndex: any) => {
         dispatch({ type: 'idCard', payload: imageList });
+
+        const idImageDataBase64 = getImageFromUploadComponent(imageList[0]["data_url"]);
+        await fetchTextInCard(idImageDataBase64, state, dispatch);
     }
 
     const submissionSummaryProps = {
         userProps: state,
         resetFunc: () => dispatch({ type: 'reset', payload: '' })
     }
+
+    const handleClose = () => dispatch({ type: 'showTextCopyModal', payload: "false" });
+    const textSelected = (e: any, selectedText: string) => {
+        e.preventDefault();
+        dispatch({type: state.affectedField, payload: selectedText});
+        dispatch({ type: 'showTextCopyModal', payload: "false" })
+    };
 
     return (
         <div>
@@ -395,6 +502,29 @@ export const RegisterNewUserWithIdCard = (props: DashboardProps) => {
                 </button>
             </div>
             <SubmissionSummary {...submissionSummaryProps} />
+            <Modal show={state.showTextCopyModal} onHide={handleClose}>
+                <Modal.Header closeButton>
+                    <Modal.Title>Select text</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <ul className="list-group">
+                        {state.pastableText.map((item, index) => {
+                            return (
+                                <a href="{void(0)}" className="text-decoration-none" onClick={(e) => textSelected(e, item)} key={index}>
+                                    <li className="list-group-item">
+                                        {item}
+                                    </li>
+                                </a>
+                            );
+                        })}
+                    </ul>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={handleClose}>
+                        Close
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };
