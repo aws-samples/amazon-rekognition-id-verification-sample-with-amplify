@@ -1,5 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "(uksb-1se9ndac1)",
     "Parameters": {
         "authamazonrekognitionidv6570cbeaUserPoolId": {
             "Type": "String",
