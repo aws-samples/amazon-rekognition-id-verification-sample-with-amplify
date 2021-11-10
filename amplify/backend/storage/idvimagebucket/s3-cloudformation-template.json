@@ -1,6 +1,6 @@
 {
 	"AWSTemplateFormatVersion": "2010-09-09",
-	"Description": "S3 resource stack creation using Amplify CLI",
+	"Description": "S3 resource stack creation using Amplify CLI (uksb-1se9ndac1)",
 	"Parameters": {
 		"bucketName": {
 			"Type": "String"
