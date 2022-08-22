@@ -5,7 +5,7 @@
   "main": "index.js",
   "license": "Apache-2.0",
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "graphql": "^15.5.2",
     "graphql-tag": "^2.12.5",
     "https": "^1.0.0",
