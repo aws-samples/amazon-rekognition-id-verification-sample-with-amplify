@@ -9,8 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@aws-amplify/ui-react": "^3.4.1",
-    "aws-amplify": "^4.3.32",
+    "@aws-amplify/ui-react": "^4.2.31",
+    "aws-amplify": "^3.3.27",
     "axios": "^0.27.2",
     "bootstrap": "^5.2.0",
     "chart.js": "^3.9.1",
