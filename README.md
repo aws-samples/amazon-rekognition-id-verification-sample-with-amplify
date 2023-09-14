@@ -1,7 +1,7 @@
 ## Identity Verification with Amazon Rekognition
 
 > [!WARNING]
-> This repository is archived. Try [AWS Samples - Rekognition Identity Verification](https://github.com/aws-samples/rekognition-identity-verification) instead.
+> This repository is archived and no longer maintained. It may no longer work, or refer to third-party libraries with known problems. We suggest [AWS Samples - Rekognition Identity Verification](https://github.com/aws-samples/rekognition-identity-verification) as an alternative to this sample.
 
 This sample, built using [AWS Amplify](https://aws.amazon.com/amplify/), is meant to showcase recommended flows when using [Amazon Rekognition](https://aws.amazon.com/rekognition/) for Identity Verification. There are two key components in this sample:
 
