@@ -1,5 +1,8 @@
 ## Identity Verification with Amazon Rekognition
 
+> [!WARNING]
+> This repository is archived. Try [AWS Samples - Rekognition Identity Verification](https://github.com/aws-samples/rekognition-identity-verification) instead.
+
 This sample, built using [AWS Amplify](https://aws.amazon.com/amplify/), is meant to showcase recommended flows when using [Amazon Rekognition](https://aws.amazon.com/rekognition/) for Identity Verification. There are two key components in this sample:
 
 - Frontend: A React/NextJS web application for exercising the key flows
@@ -26,6 +29,7 @@ Users interested in implemented Identity Verification with Amazon Rekognition sh
 6. Store the face image in the S3 bucket along with the user metadata (face-id returned from the IndexFaces API, SSN and S3 URL) in DynamoDB. The SSN or a unique person identifier can be used as a key to lookup S3 URL and the face-id.
 
 ### Existing user login
+
 1. Check face image quality via the [DetectFaces API](https://docs.aws.amazon.com/rekognition/latest/dg/API_DetectFaces.html).
 2. Search against the collection with [SearchFacesbyImage API](https://docs.aws.amazon.com/rekognition/latest/dg/API_SearchFacesByImage.html). If there is a face match, then return the use the faceId to return additional data about the user by cross-referencing against profile data in DynamoDB.
 
@@ -44,7 +48,6 @@ Next, if you don't have the AWS Amplify CLI installed, please follow the instruc
 Simply click on the link below:
 
 [![amplifybutton](https://oneclick.amplifyapp.com/button.svg)](https://console.aws.amazon.com/amplify/home#/deploy?repo=https://github.com/aws-samples/amazon-rekognition-id-verification-sample-with-amplify)
-
 
 ## Deploying sample app using the CLI
 
@@ -88,7 +91,7 @@ For more details on hosting/publishing, please see [Add hosting to your app](htt
 
 1. Create a user in the Cognito User Pool attached to the app.
 2. Accessing the web endpoint.
-Amplify allows you 
+   Amplify allows you
 
 ## Security
 
@@ -97,4 +100,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This library is licensed under the MIT-0 License. See the LICENSE file.
-
