@@ -36,7 +36,7 @@ Users interested in implemented Identity Verification with Amazon Rekognition sh
 ## Installing and configuring AWS Amplify
 
 > [!WARNING]
-> This repository is archived. Try [AWS Samples - Rekognition Identity Verification](https://github.com/aws-samples/rekognition-identity-verification) instead.
+> This repository is archived and no longer maintained. It may no longer work, or refer to third-party libraries with known problems. We suggest [AWS Samples - Rekognition Identity Verification](https://github.com/aws-samples/rekognition-identity-verification) as an alternative to this sample.
 
 1. Install npm
 
@@ -49,7 +49,7 @@ Next, if you don't have the AWS Amplify CLI installed, please follow the instruc
 ## Deploying sample app using the CLI
 
 > [!WARNING]
-> This repository is archived. Try [AWS Samples - Rekognition Identity Verification](https://github.com/aws-samples/rekognition-identity-verification) instead.
+> This repository is archived and no longer maintained. It may no longer work, or refer to third-party libraries with known problems. We suggest [AWS Samples - Rekognition Identity Verification](https://github.com/aws-samples/rekognition-identity-verification) as an alternative to this sample.
 
 1. Clone the git repo on your local machine
 
